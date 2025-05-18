@@ -4,6 +4,8 @@ import Home from "./router";
 import QueryProvider from "./providers/QueryProvider";
 import layout from "./router/layout";
 
+import "./index.css";
+
 const router = createBrowserRouter([
     {
         Component: layout,
