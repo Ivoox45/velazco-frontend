@@ -1,16 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
+import axios from "../../../lib/axios";
+import type { Product } from "../types";
 
-function useGetProducts() {
-    return useQuery({
+export default function useGetProducts() {
+    return useQuery<Product[], Error>({
         queryKey: ["products"],
         queryFn: async () => {
-            const response = await fetch("http://localhost:8080/api/products");
-            if (!response.ok) {
-                throw new Error("Network response was not ok");
-            }
-            return response.json();
+            const response = await axios.get("/products");
+            return response.data;
         },
     });
 }
-
-export default useGetProducts;

@@ -1,18 +1,10 @@
-import { AppSidebar } from "@/components/app.sidebar";
-import { Button } from "@/components/ui/button";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Outlet } from "react-router";
 
-export default function layout({ children }: { children: React.ReactNode }) {
+export default function Layout() {
     return (
-        <div>
-            <SidebarProvider>
-                <AppSidebar />
-                <main>
-                    <SidebarTrigger />
-                    <Outlet />
-                </main>
-            </SidebarProvider>
+        <div style={{ padding: "20px" }}>
+            <h1>Mi Aplicación de Productos</h1>
+            <Outlet />
         </div>
     );
 }

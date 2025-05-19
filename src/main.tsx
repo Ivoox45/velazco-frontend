@@ -1,23 +1,27 @@
-import { createBrowserRouter, RouterProvider } from "react-router";
 import ReactDOM from "react-dom/client";
-import Home from "./router";
+import { createBrowserRouter, RouterProvider } from "react-router";
 import QueryProvider from "./providers/QueryProvider";
-import layout from "./router/layout";
+
+import Home from "./router";
+import Layout from "./router/layout";
+
+import ProductCreateForm from "./feature/products/components/product-create-form";
+import ProductGetForm from "./feature/products/components/product-get-form";
 
 import "./index.css";
 
 const router = createBrowserRouter([
     {
-        Component: layout,
-        children: [{ index: true, element: <Home /> },
-          {path: "/products", element: <Home />}, 
+        element: <Layout />,
+        children: [
+            { index: true, element: <Home /> },
+            { path: "products", element: <ProductGetForm /> },
+            { path: "products/create", element: <ProductCreateForm /> },
         ],
     },
 ]);
 
-const root = document.getElementById("root")!;
-
-ReactDOM.createRoot(root).render(
+ReactDOM.createRoot(document.getElementById("root")!).render(
     <QueryProvider>
         <RouterProvider router={router} />
     </QueryProvider>
