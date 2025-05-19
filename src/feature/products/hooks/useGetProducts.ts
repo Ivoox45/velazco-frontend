@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import axios from "../../../lib/axios";
+import axios from "@/lib/axios";
 import type { Product } from "../types";
 
 export default function useGetProducts() {
