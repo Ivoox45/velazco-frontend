@@ -1,173 +1,110 @@
-import * as React from "react"
+import * as React from "react";
 import {
-  AudioWaveform,
-  BookOpen,
-  Bot,
-  Command,
-  Frame,
-  GalleryVerticalEnd,
-  Map,
-  PieChart,
-  Settings2,
-  SquareTerminal,
-} from "lucide-react"
+    AudioWaveform,
+    BoxIcon,
+    ChefHatIcon,
+    ClipboardList,
+    Command,
+    CreditCard,
+    GalleryVerticalEnd,
+    HandHelping,
+    LayoutDashboardIcon,
+    ShoppingCart,
+    UsersIcon,
+} from "lucide-react";
 
-import { NavMain } from "@/components/nav-main"
-import { NavProjects } from "@/components/nav-projects"
-import { NavUser } from "@/components/nav-user"
-import { TeamSwitcher } from "@/components/team-switcher"
+import { NavProjects } from "@/components/nav-projects";
+import { NavUser } from "@/components/nav-user";
+import { TeamSwitcher } from "@/components/team-switcher";
 import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarHeader,
-  SidebarRail,
-} from "@/components/ui/sidebar"
+    Sidebar,
+    SidebarContent,
+    SidebarFooter,
+    SidebarHeader,
+    SidebarRail,
+} from "@/components/ui/sidebar";
 
-// This is sample data.
+// Solo usamos proyectos ahora
 const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
-  teams: [
-    {
-      name: "Acme Inc",
-      logo: GalleryVerticalEnd,
-      plan: "Enterprise",
+    user: {
+        name: "shadcn",
+        email: "m@example.com",
+        avatar: "/avatars/shadcn.jpg",
     },
-    {
-      name: "Acme Corp.",
-      logo: AudioWaveform,
-      plan: "Startup",
-    },
-    {
-      name: "Evil Corp.",
-      logo: Command,
-      plan: "Free",
-    },
-  ],
-  navMain: [
-    {
-      title: "Playground",
-      url: "#",
-      icon: SquareTerminal,
-      isActive: true,
-      items: [
+    teams: [
         {
-          title: "History",
-          url: "#",
+            name: "Acme Inc",
+            logo: GalleryVerticalEnd,
+            plan: "Enterprise",
         },
         {
-          title: "Starred",
-          url: "#",
+            name: "Acme Corp.",
+            logo: AudioWaveform,
+            plan: "Startup",
         },
         {
-          title: "Settings",
-          url: "#",
+            name: "Evil Corp.",
+            logo: Command,
+            plan: "Free",
         },
-      ],
-    },
-    {
-      title: "Models",
-      url: "#",
-      icon: Bot,
-      items: [
+    ],
+    projects: [
         {
-          title: "Genesis",
-          url: "#",
+            name: "Dashboard",
+            url: "/dashboard", // <- o "/dashboard" si defines esa ruta después
+            icon: LayoutDashboardIcon,
         },
         {
-          title: "Explorer",
-          url: "#",
+            name: "Inventario",
+            url: "/inventario",
+            icon: BoxIcon,
         },
         {
-          title: "Quantum",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Documentation",
-      url: "#",
-      icon: BookOpen,
-      items: [
-        {
-          title: "Introduction",
-          url: "#",
+            name: "Pedidos en Tienda",
+            url: "/pedidos",
+            icon: ShoppingCart,
         },
         {
-          title: "Get Started",
-          url: "#",
+            name: "Caja",
+            url: "/caja",
+            icon: CreditCard,
         },
         {
-          title: "Tutorials",
-          url: "#",
+            name: "Entregas",
+            url: "/entregas",
+            icon: HandHelping,
         },
         {
-          title: "Changelog",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Settings",
-      url: "#",
-      icon: Settings2,
-      items: [
-        {
-          title: "General",
-          url: "#",
+            name: "Producción",
+            url: "/produccion",
+            icon: ChefHatIcon,
         },
         {
-          title: "Team",
-          url: "#",
+            name: "Órdenes de Producción",
+            url: "/ordenes-produccion",
+            icon: ClipboardList,
         },
         {
-          title: "Billing",
-          url: "#",
+            name: "Usuarios",
+            url: "/usuarios",
+            icon: UsersIcon,
         },
-        {
-          title: "Limits",
-          url: "#",
-        },
-      ],
-    },
-  ],
-  projects: [
-    {
-      name: "Design Engineering",
-      url: "#",
-      icon: Frame,
-    },
-    {
-      name: "Sales & Marketing",
-      url: "#",
-      icon: PieChart,
-    },
-    {
-      name: "Travel",
-      url: "#",
-      icon: Map,
-    },
-  ],
-}
+    ],
+};
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  return (
-    <Sidebar collapsible="icon" {...props}>
-      <SidebarHeader>
-        <TeamSwitcher teams={data.teams} />
-      </SidebarHeader>
-      <SidebarContent>
-        <NavMain items={data.navMain} />
-        <NavProjects projects={data.projects} />
-      </SidebarContent>
-      <SidebarFooter>
-        <NavUser user={data.user} />
-      </SidebarFooter>
-      <SidebarRail />
-    </Sidebar>
-  )
+    return (
+        <Sidebar collapsible="icon" {...props}>
+            <SidebarHeader>
+                <TeamSwitcher teams={data.teams} />
+            </SidebarHeader>
+            <SidebarContent>
+                <NavProjects projects={data.projects} />
+            </SidebarContent>
+            <SidebarFooter>
+                <NavUser user={data.user} />
+            </SidebarFooter>
+            <SidebarRail />
+        </Sidebar>
+    );
 }
