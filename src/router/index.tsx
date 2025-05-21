@@ -1,4 +1,4 @@
-import useGetProducts from "@/feature/products/hooks/useGetProducts";
+import useGetProducts from "@/feature/inventario/hooks/useGetProducts";
 
 export default function Home() {
     const { data, isLoading, error } = useGetProducts();

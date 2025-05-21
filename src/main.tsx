@@ -1,38 +1,45 @@
 import ReactDOM from "react-dom/client";
-import { createBrowserRouter, RouterProvider } from "react-router";
+import { createBrowserRouter, Navigate, RouterProvider } from "react-router";
+import { ThemeProvider } from "next-themes";
 import QueryProvider from "./providers/QueryProvider";
 
 import Home from "./router";
 import Layout from "./router/layout";
 
-import ProductGetForm from "./feature/products/components/product-get-form";
-
 import "./index.css";
-import SaleGetForm from "./feature/caja/components/sale-get-form";
-import PedidoGetForm from "./feature/pedidos/components/pedido-get-form";
-import EntregaGetForm from "./feature/entregas/components/entrega-get-form";
-import OrdenProduccionGetForm from "./feature/ordenes-produccion/components/orden-produccion-get-form";
-import ProduccionGetForm from "./feature/produccion/components/produccion-get-form";
-import UsuarioGetForm from "./feature/usuarios/components/usuario-get-form";
+import {
+    InventarioPage,
+    PedidosPage,
+    CajaPage,
+    EntregasPage,
+    ProduccionPage,
+    OrderProductionPage,
+    UserPage,
+} from "@/feature";
+import { Toaster } from "@/components/ui/sonner";
 
 const router = createBrowserRouter([
     {
         element: <Layout />,
         children: [
+            { path: "/", element: <Navigate to="/dashboard" replace /> },
             { path: "dashboard", element: <Home /> },
-            { path: "inventario", element: <ProductGetForm /> },
-            { path: "pedidos", element: <PedidoGetForm /> },
-            { path: "caja", element: <SaleGetForm /> },
-            { path: "entregas", element: <EntregaGetForm /> },
-            { path: "produccion", element: <ProduccionGetForm /> },
-            { path: "ordenes-produccion", element: <OrdenProduccionGetForm /> },
-            { path: "usuarios", element: <UsuarioGetForm /> },
+            { path: "inventario", element: <InventarioPage /> },
+            { path: "pedidos", element: <PedidosPage /> },
+            { path: "caja", element: <CajaPage /> },
+            { path: "entregas", element: <EntregasPage /> },
+            { path: "produccion", element: <ProduccionPage /> },
+            { path: "ordenes-produccion", element: <OrderProductionPage /> },
+            { path: "usuarios", element: <UserPage /> },
         ],
     },
 ]);
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
-    <QueryProvider>
-        <RouterProvider router={router} />
-    </QueryProvider>
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+        <QueryProvider>
+            <RouterProvider router={router} />
+            <Toaster />
+        </QueryProvider>
+    </ThemeProvider>
 );

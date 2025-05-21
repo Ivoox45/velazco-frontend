@@ -1,0 +1,1 @@
+export { default as CajaPage } from "./pages/CajaPage";
