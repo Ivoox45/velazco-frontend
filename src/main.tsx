@@ -1,6 +1,7 @@
 import ReactDOM from "react-dom/client";
 import { createBrowserRouter, Navigate, RouterProvider } from "react-router";
 import { ThemeProvider } from "next-themes";
+import { CartProvider } from "@/providers/CartProvider";
 import QueryProvider from "./providers/QueryProvider";
 
 import Home from "./router";
@@ -38,8 +39,10 @@ const router = createBrowserRouter([
 ReactDOM.createRoot(document.getElementById("root")!).render(
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
         <QueryProvider>
-            <RouterProvider router={router} />
-            <Toaster />
+            <CartProvider>
+                <RouterProvider router={router} />
+                <Toaster />
+            </CartProvider>
         </QueryProvider>
     </ThemeProvider>
 );

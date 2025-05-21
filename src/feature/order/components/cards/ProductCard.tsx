@@ -1,57 +1,107 @@
-import type { Product } from "../../types"
+import type { Product } from "../../types";
 import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardTitle,
-} from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { ShoppingCart } from "lucide-react"
+  Card,
+  CardContent,
+  CardDescription,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { ShoppingCart } from "lucide-react";
+import { useCart } from "@/providers/CartProvider";
+import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
 
 type Props = {
-    product: Product
-    onAdd?: (product: Product) => void
-}
+  product: Product;
+  onAdd?: (product: Product) => void;
+};
 
-export default function ProductCard({ product, onAdd }: Props) {
-    return (
-        <Card className="flex flex-col overflow-hidden rounded-2xl shadow-sm w-full mx-auto min-w-[270px]">
+export default function ProductCard({ product }: Props) {
+  const { cart, addToCart } = useCart();
 
+  // Verificar si el producto ya está en el carrito
+  const itemInCart = cart.find((p) => p.id === product.id);
+  const currentQty = itemInCart?.quantity || 0;
 
-            <div className="p-4 py-0">
-                <div className="bg-muted flex items-center justify-center rounded-xl overflow-hidden h-70 w-auto">
-                    <img
-                        src="https://placehold.co/1200x1200"
-                        alt="Producto"
-                        className="h-full w-full object-cover"
-                    />
-                </div>
-            </div>
+  // Función para agregar producto al carrito con validaciones
+  const handleAddToCart = () => {
+    if (!product.active) {
+      toast.warning("Producto no disponible", {
+        description: `El producto "${product.name}" está inactivo.`,
+      });
+      return;
+    }
 
+    if (product.stock <= 0) {
+      toast.warning("Stock agotado", {
+        description: `El producto "${product.name}" no tiene stock disponible.`,
+      });
+      return;
+    }
 
-            {/* Contenido */}
-            <CardContent className="flex-1 flex flex-col justify-between p-4 pt-2">
-                <div>
-                    <CardTitle className="text-base font-semibold flex justify-between items-center">
-                        {product.name}
-                        <div className="bg-black text-white text-xs px-2 py-1 rounded-full">
-                            ${product.price.toFixed(2)}
-                        </div>
-                    </CardTitle>
-                    <CardDescription className="text-sm mt-1">
-                        {product.description || product.category?.name || "Sin categoría"}
-                    </CardDescription>
-                </div>
+    if (currentQty >= product.stock) {
+      toast.warning("Stock insuficiente", {
+        description: `Solo hay ${product.stock} unidades disponibles de "${product.name}".`,
+      });
+      return;
+    }
 
-                <Button
-                    onClick={() => onAdd?.(product)}
-                    className="mt-4 w-full"
-                    variant="default"
-                >
-                    <ShoppingCart className="w-4 h-4 mr-2" />
-                    Agregar
-                </Button>
-            </CardContent>
-        </Card>
-    )
+    addToCart(product);
+    toast.success("Producto agregado", {
+      description: product.name,
+    });
+  };
+
+  return (
+    <Card className="flex flex-col overflow-hidden rounded-2xl shadow-sm w-full mx-auto min-w-[170px]">
+      {/* Imagen */}
+      <div className="px-4">
+        <div className="bg-muted flex items-center justify-center rounded-xl overflow-hidden aspect-square">
+          <img
+            src="https://pasteleriafront.vercel.app/placeholder.svg?height=200&width=200"
+            alt="Producto"
+            className="h-full w-full object-cover"
+          />
+        </div>
+      </div>
+
+      {/* Contenido */}
+      <CardContent className="flex-1 flex flex-col justify-between px-4 pb-3 pt-2">
+        <div className="mb-3">
+          <div className="flex justify-between items-center">
+            <CardTitle className="text-base font-semibold">
+              {product.name}
+            </CardTitle>
+            <Badge className="bg-black text-white text-xs px-2 py-1 rounded-full">
+              ${product.price.toFixed(2)}
+            </Badge>
+          </div>
+          <CardDescription className="text-sm mt-0.5">
+            {product.description || product.category?.name || "Sin categoría"}
+          </CardDescription>
+        </div>
+
+        <Button
+          onClick={handleAddToCart}
+          className="w-full"
+          variant="default"
+          disabled={
+            !product.active ||
+            product.stock <= 0 ||
+            currentQty >= product.stock
+          }
+        >
+          <ShoppingCart className="w-4 h-4 mr-2" />
+          {!product.active
+            ? "No disponible"
+            : product.stock <= 0
+              ? "Sin stock"
+              : currentQty >= product.stock
+                ? "Stock máximo"
+                : "Agregar"}
+        </Button>
+      </CardContent>
+    </Card>
+
+  );
 }
