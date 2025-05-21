@@ -1,4 +1,3 @@
-// src/features/products/api/products.ts
 import axios from "@/lib/axios";
 import type { CreateProduct, Product } from "../types";
 
