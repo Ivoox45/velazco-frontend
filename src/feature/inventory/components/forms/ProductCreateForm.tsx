@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import useCreateProduct from "@/feature/inventario/hooks/useCreateProduct";
-import type { CreateProduct } from "@/feature/inventario/types";
+import useCreateProduct from "@/feature/inventory/hooks/useCreateProduct";
+import type { CreateProduct } from "@/feature/inventory/types";
 import { toast } from "sonner";
 
 import {

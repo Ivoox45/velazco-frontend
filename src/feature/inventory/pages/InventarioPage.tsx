@@ -1,7 +1,7 @@
 import {
     ProductCreateForm,
     ProductTable,
-} from "@/feature/inventario/components";
+} from "@/feature/inventory/components";
 
 export default function InventarioPage() {
     return (
