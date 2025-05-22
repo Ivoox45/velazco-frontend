@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import useCreateProduct from "@/feature/inventory/hooks/useCreateProduct";
+import useUpdateProduct from "@/feature/inventory/hooks/useUpdateProduct";
 import useGetCategories from "@/feature/inventory/hooks/useGetCategories";
 import { toast } from "sonner";
+import type { ProductListResponse } from "@/feature/inventory/types";
 
 import {
     Dialog,
@@ -25,53 +25,33 @@ import {
     SelectContent,
     SelectItem,
 } from "@/components/ui/select";
+import { useState } from "react";
 
-const STORAGE_KEY = "draft-product";
+type Props = {
+    product: ProductListResponse;
+    trigger: React.ReactNode;
+};
 
-export default function ProductCreateForm() {
+export default function ProductUpdateForm({ product, trigger }: Props) {
     const [open, setOpen] = useState(false);
-    const { mutate } = useCreateProduct();
-    const { data: categories, isLoading } = useGetCategories();
+    const { mutate } = useUpdateProduct();
+    const { data: categories } = useGetCategories();
 
-    const [name, setName] = useState("");
-    const [price, setPrice] = useState("");
-    const [stock, setStock] = useState("");
-    const [categoryId, setCategoryId] = useState("");
-    const [active, setActive] = useState("");
+    const [name, setName] = useState(product.name);
+    const [price, setPrice] = useState(product.price.toString());
+    const [stock, setStock] = useState(product.stock.toString());
+    const [categoryId, setCategoryId] = useState(
+        product.category.id.toString()
+    );
+    const [active, setActive] = useState(product.active ? "true" : "false");
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
-
-    useEffect(() => {
-        const saved = localStorage.getItem(STORAGE_KEY);
-        if (saved) {
-            const parsed = JSON.parse(saved);
-            setName(parsed.name || "");
-            setPrice(parsed.price || "");
-            setStock(parsed.stock || "");
-            setCategoryId(parsed.categoryId || "");
-            setActive(parsed.active || "");
-        }
-    }, []);
-
-    useEffect(() => {
-        const data = { name, price, stock, categoryId, active };
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-    }, [name, price, stock, categoryId, active]);
-
-    const resetForm = () => {
-        setName("");
-        setPrice("");
-        setStock("");
-        setCategoryId("");
-        setActive("");
-        setSelectedFile(null);
-        localStorage.removeItem(STORAGE_KEY);
-    };
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
         mutate(
             {
+                id: product.id,
                 name,
                 price: parseFloat(price),
                 stock: parseInt(stock),
@@ -81,12 +61,11 @@ export default function ProductCreateForm() {
             },
             {
                 onSuccess: () => {
-                    toast.success("Producto creado correctamente");
+                    toast.success("Producto actualizado");
                     setOpen(false);
-                    resetForm();
                 },
                 onError: (error) => {
-                    toast.error(error.message || "Error al crear el producto");
+                    toast.error(error.message || "Error al actualizar");
                 },
             }
         );
@@ -94,27 +73,23 @@ export default function ProductCreateForm() {
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-                <Button variant="outline">Crear producto</Button>
-            </DialogTrigger>
+            <DialogTrigger asChild>{trigger}</DialogTrigger>
 
             <DialogContent>
                 <DialogHeader>
-                    <DialogTitle>Crear nuevo producto</DialogTitle>
+                    <DialogTitle>Editar producto</DialogTitle>
                     <DialogDescription>
-                        Complete los detalles del producto para agregarlo al
-                        inventario.
+                        Actualiza los datos de este producto.
                     </DialogDescription>
                 </DialogHeader>
 
                 <form onSubmit={handleSubmit} className="flex flex-col gap-y-5">
                     <div className="flex flex-col gap-y-1">
-                        <Label>Nombre del Producto</Label>
+                        <Label>Nombre</Label>
                         <Input
                             type="text"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
-                            placeholder="Ej: Besitos"
                             required
                         />
                     </div>
@@ -129,16 +104,6 @@ export default function ProductCreateForm() {
                                 <SelectValue placeholder="Selecciona una categoría" />
                             </SelectTrigger>
                             <SelectContent>
-                                {isLoading && (
-                                    <div className="px-4 py-2 text-sm text-muted-foreground">
-                                        Cargando categorías...
-                                    </div>
-                                )}
-                                {categories?.length === 0 && !isLoading && (
-                                    <div className="px-4 py-2 text-sm text-muted-foreground">
-                                        No hay categorías disponibles
-                                    </div>
-                                )}
                                 {categories?.map((cat) => (
                                     <SelectItem
                                         key={cat.id}
@@ -168,7 +133,6 @@ export default function ProductCreateForm() {
                             step={0.01}
                             value={price}
                             onChange={(e) => setPrice(e.target.value)}
-                            placeholder="Ej: 25.99"
                             required
                         />
                     </div>
@@ -177,7 +141,7 @@ export default function ProductCreateForm() {
                         <Label>Estado</Label>
                         <Select value={active} onValueChange={setActive}>
                             <SelectTrigger className="w-full">
-                                <SelectValue placeholder="Selecciona un estado" />
+                                <SelectValue placeholder="Estado" />
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="true">Activo</SelectItem>
@@ -187,40 +151,50 @@ export default function ProductCreateForm() {
                     </div>
 
                     <div className="flex flex-col gap-y-1">
-                        <Label>Imagen del producto</Label>
-                        <Input
-                            type="file"
-                            accept="image/*"
-                            onChange={(e) => {
-                                const file = e.target.files?.[0];
-                                if (file) {
-                                    setSelectedFile(file);
-                                }
-                            }}
-                        />
-                        {selectedFile && (
-                            <img
-                                src={URL.createObjectURL(selectedFile)}
-                                alt="Vista previa"
-                                className="mt-2 max-h-40 object-contain border rounded"
+                        <Label>Imagen</Label>
+
+                        <div className="relative w-full border rounded bg-muted p-2">
+                            <input
+                                type="file"
+                                accept="image/*"
+                                onChange={(e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file) setSelectedFile(file);
+                                }}
+                                id={`file-input-${product.id}`}
+                                className="hidden"
                             />
-                        )}
+
+                            <label
+                                htmlFor={`file-input-${product.id}`}
+                                className="group cursor-pointer block relative"
+                            >
+                                <img
+                                    src={
+                                        selectedFile
+                                            ? URL.createObjectURL(selectedFile)
+                                            : product.image ||
+                                                "/placeholder.png"
+                                    }
+                                    alt="Vista previa"
+                                    className="w-full max-h-48 object-contain mx-auto"
+                                />
+                                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                                    <span className="text-white text-sm font-medium">
+                                        Cambiar imagen
+                                    </span>
+                                </div>
+                            </label>
+                        </div>
                     </div>
 
-                    <DialogFooter className="mt-6 flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 space-y-2 sm:space-y-0">
-                        <Button
-                            type="button"
-                            variant="secondary"
-                            onClick={resetForm}
-                        >
-                            Limpiar todo
-                        </Button>
+                    <DialogFooter className="mt-4 flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 space-y-2 sm:space-y-0">
                         <DialogClose asChild>
                             <Button type="button" variant="outline">
                                 Cancelar
                             </Button>
                         </DialogClose>
-                        <Button type="submit">Guardar producto</Button>
+                        <Button type="submit">Guardar cambios</Button>
                     </DialogFooter>
                 </form>
             </DialogContent>
