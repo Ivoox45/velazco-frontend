@@ -129,7 +129,7 @@ export default function CartSheet() {
                                 <div className="flex-1">
                                     <div className="font-medium">{item.name}</div>
                                     <div className="text-sm text-muted-foreground">
-                                        ${item.price.toFixed(2)}
+                                        S/.{item.price.toFixed(2)}
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-2">
@@ -169,17 +169,9 @@ export default function CartSheet() {
                     </div>
 
                     <div className="mt-8 space-y-4 text-sm border-t pt-6 px-4">
-                        <div className="flex justify-between">
-                            <span>Subtotal</span>
-                            <span>${subtotal.toFixed(2)}</span>
-                        </div>
-                        <div className="flex justify-between">
-                            <span>Impuestos</span>
-                            <span>${igv.toFixed(2)}</span>
-                        </div>
                         <div className="flex justify-between font-semibold">
                             <span>Total</span>
-                            <span>${total.toFixed(2)}</span>
+                            <span>S/.{total.toFixed(2)}</span>
                         </div>
                     </div>
 

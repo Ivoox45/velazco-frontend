@@ -73,7 +73,7 @@ export default function ProductCard({ product }: Props) {
               {product.name}
             </CardTitle>
             <Badge className="bg-black text-white text-xs px-2 py-1 rounded-full">
-              ${product.price.toFixed(2)}
+              S/.{product.price.toFixed(2)}
             </Badge>
           </div>
           <CardDescription className="text-sm mt-0.5">
