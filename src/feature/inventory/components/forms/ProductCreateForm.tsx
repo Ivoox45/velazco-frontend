@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import useCreateProduct from "@/feature/inventory/hooks/useCreateProduct";
 import useGetCategories from "@/feature/inventory/hooks/useGetCategories";
 import { toast } from "sonner";
+import ImageCropDialog from "../ImageCropDialog";
 
 import {
     Dialog,
@@ -40,6 +41,19 @@ export default function ProductCreateForm() {
     const [active, setActive] = useState("");
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
+    const [fileInputKey, setFileInputKey] = useState(0);
+    const [showCropper, setShowCropper] = useState(false);
+    const [tempImageUrl, setTempImageUrl] = useState<string | null>(null);
+
+    const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const url = URL.createObjectURL(file);
+            setTempImageUrl(url);
+            setShowCropper(true);
+        }
+    };
+
     useEffect(() => {
         const saved = localStorage.getItem(STORAGE_KEY);
         if (saved) {
@@ -64,6 +78,8 @@ export default function ProductCreateForm() {
         setCategoryId("");
         setActive("");
         setSelectedFile(null);
+        setTempImageUrl(null);
+        setFileInputKey((prev) => prev + 1);
         localStorage.removeItem(STORAGE_KEY);
     };
 
@@ -106,6 +122,17 @@ export default function ProductCreateForm() {
                         inventario.
                     </DialogDescription>
                 </DialogHeader>
+
+                {tempImageUrl && (
+                    <ImageCropDialog
+                        open={showCropper}
+                        imageUrl={tempImageUrl}
+                        onClose={() => setShowCropper(false)}
+                        onCropComplete={(croppedFile) => {
+                            setSelectedFile(croppedFile);
+                        }}
+                    />
+                )}
 
                 <form onSubmit={handleSubmit} className="flex flex-col gap-y-5">
                     <div className="flex flex-col gap-y-1">
@@ -185,26 +212,61 @@ export default function ProductCreateForm() {
                             </SelectContent>
                         </Select>
                     </div>
-
                     <div className="flex flex-col gap-y-1">
                         <Label>Imagen del producto</Label>
-                        <Input
-                            type="file"
-                            accept="image/*"
-                            onChange={(e) => {
-                                const file = e.target.files?.[0];
-                                if (file) {
-                                    setSelectedFile(file);
-                                }
-                            }}
-                        />
-                        {selectedFile && (
-                            <img
-                                src={URL.createObjectURL(selectedFile)}
-                                alt="Vista previa"
-                                className="mt-2 max-h-40 object-contain border rounded"
+
+                        <div className="relative w-full h-48 border-2 border-dashed border-muted rounded-lg bg-muted/40 overflow-hidden group">
+                            <input
+                                key={fileInputKey} 
+                                type="file"
+                                accept="image/*"
+                                onChange={handleImageSelect}
+                                id="file-input-create"
+                                className="hidden"
                             />
-                        )}
+
+                            <label
+                                htmlFor="file-input-create"
+                                className="w-full h-full flex items-center justify-center cursor-pointer relative"
+                            >
+                                {!selectedFile ? (
+                                    <div className="text-center text-muted-foreground">
+                                        <svg
+                                            className="mx-auto h-10 w-10 opacity-50"
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke="currentColor"
+                                        >
+                                            <path
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                strokeWidth={2}
+                                                d="M3 16V6a2 2 0 012-2h3l2-2h4l2 2h3a2 2 0 012 2v10m-4 4H7a2 2 0 01-2-2v0a2 2 0 012-2h10a2 2 0 012 2v0a2 2 0 01-2 2z"
+                                            />
+                                        </svg>
+                                        <p className="text-sm mt-2">
+                                            Haz clic para seleccionar una imagen
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <img
+                                            src={URL.createObjectURL(
+                                                selectedFile
+                                            )}
+                                            alt="Vista previa"
+                                            className="object-contain w-full h-full rounded"
+                                        />
+                                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                                            <span className="text-white text-sm font-medium">
+                                                Cambiar imagen
+                                            </span>
+                                        </div>
+                                    </>
+                                )}
+                            </label>
+                        </div>
                     </div>
 
                     <DialogFooter className="mt-6 flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2 space-y-2 sm:space-y-0">

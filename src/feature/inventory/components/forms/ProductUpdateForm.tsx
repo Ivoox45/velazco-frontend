@@ -25,7 +25,11 @@ import {
     SelectContent,
     SelectItem,
 } from "@/components/ui/select";
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
+import ImageCropDialog from "../ImageCropDialog";
+
+const IMAGE_URL = import.meta.env.VITE_IMAGE_URL;
 
 type Props = {
     product: ProductListResponse;
@@ -37,14 +41,37 @@ export default function ProductUpdateForm({ product, trigger }: Props) {
     const { mutate } = useUpdateProduct();
     const { data: categories } = useGetCategories();
 
-    const [name, setName] = useState(product.name);
-    const [price, setPrice] = useState(product.price.toString());
-    const [stock, setStock] = useState(product.stock.toString());
-    const [categoryId, setCategoryId] = useState(
-        product.category.id.toString()
-    );
-    const [active, setActive] = useState(product.active ? "true" : "false");
+    const [name, setName] = useState("");
+    const [price, setPrice] = useState("");
+    const [stock, setStock] = useState("");
+    const [categoryId, setCategoryId] = useState("");
+    const [active, setActive] = useState("");
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
+    const [fileInputKey, setFileInputKey] = useState(0);
+    const [showCropper, setShowCropper] = useState(false);
+    const [tempImageUrl, setTempImageUrl] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (open) {
+            setName(product.name);
+            setPrice(product.price.toString());
+            setStock(product.stock.toString());
+            setCategoryId(product.category.id.toString());
+            setActive(product.active ? "true" : "false");
+            setSelectedFile(null);
+            setTempImageUrl(null);
+        }
+    }, [open, product]);
+
+    const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const url = URL.createObjectURL(file);
+            setTempImageUrl(url);
+            setShowCropper(true);
+        }
+    };
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -63,6 +90,7 @@ export default function ProductUpdateForm({ product, trigger }: Props) {
                 onSuccess: () => {
                     toast.success("Producto actualizado");
                     setOpen(false);
+                    setFileInputKey((prev) => prev + 1);
                 },
                 onError: (error) => {
                     toast.error(error.message || "Error al actualizar");
@@ -82,6 +110,18 @@ export default function ProductUpdateForm({ product, trigger }: Props) {
                         Actualiza los datos de este producto.
                     </DialogDescription>
                 </DialogHeader>
+
+                {tempImageUrl && (
+                    <ImageCropDialog
+                        open={showCropper}
+                        imageUrl={tempImageUrl}
+                        onClose={() => setShowCropper(false)}
+                        onCropComplete={(croppedFile) => {
+                            setSelectedFile(croppedFile);
+                            setFileInputKey((prev) => prev + 1);
+                        }}
+                    />
+                )}
 
                 <form onSubmit={handleSubmit} className="flex flex-col gap-y-5">
                     <div className="flex flex-col gap-y-1">
@@ -155,12 +195,10 @@ export default function ProductUpdateForm({ product, trigger }: Props) {
 
                         <div className="relative w-full border rounded bg-muted p-2">
                             <input
+                                key={fileInputKey}
                                 type="file"
                                 accept="image/*"
-                                onChange={(e) => {
-                                    const file = e.target.files?.[0];
-                                    if (file) setSelectedFile(file);
-                                }}
+                                onChange={handleImageSelect}
                                 id={`file-input-${product.id}`}
                                 className="hidden"
                             />
@@ -169,16 +207,24 @@ export default function ProductUpdateForm({ product, trigger }: Props) {
                                 htmlFor={`file-input-${product.id}`}
                                 className="group cursor-pointer block relative"
                             >
-                                <img
-                                    src={
-                                        selectedFile
-                                            ? URL.createObjectURL(selectedFile)
-                                            : product.image ||
-                                                "/placeholder.png"
-                                    }
-                                    alt="Vista previa"
-                                    className="w-full max-h-48 object-contain mx-auto"
-                                />
+                                {selectedFile ? (
+                                    <img
+                                        src={URL.createObjectURL(selectedFile)}
+                                        alt="Vista previa"
+                                        className="w-full max-h-48 object-contain mx-auto"
+                                    />
+                                ) : product.image ? (
+                                    <img
+                                        src={`${IMAGE_URL}${product.image}`}
+                                        alt="Imagen del producto"
+                                        className="w-full max-h-48 object-contain mx-auto"
+                                    />
+                                ) : (
+                                    <div className="w-full h-48 flex items-center justify-center text-sm text-muted-foreground italic">
+                                        Sin imagen disponible
+                                    </div>
+                                )}
+
                                 <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
                                     <span className="text-white text-sm font-medium">
                                         Cambiar imagen
