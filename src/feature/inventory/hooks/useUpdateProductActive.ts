@@ -15,6 +15,7 @@ export default function useUpdateProductActive() {
         }) => updateProductActive(id, active),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["products"] });
+            queryClient.invalidateQueries({ queryKey: ["productsAvailable"] });
         },
     });
 }

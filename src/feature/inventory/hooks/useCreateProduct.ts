@@ -8,6 +8,7 @@ export default function useCreateProduct() {
         mutationFn: createProduct,
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["products"] });
+            queryClient.invalidateQueries({ queryKey: ["productsAvailable"] });
         },
     });
 }
