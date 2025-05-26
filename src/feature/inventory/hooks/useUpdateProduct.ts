@@ -10,6 +10,7 @@ export default function useUpdateProduct() {
             updateProduct(id, data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["products"] });
+            queryClient.invalidateQueries({ queryKey: ["productsAvailable"] });
         },
     });
 }

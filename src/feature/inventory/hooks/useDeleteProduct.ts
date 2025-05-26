@@ -8,6 +8,7 @@ export default function useDeleteProduct() {
         mutationFn: (id: number) => deleteProduct(id),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ["products"] });
+            queryClient.invalidateQueries({ queryKey: ["productsAvailable"] });
         },
     });
 }

@@ -57,11 +57,17 @@ export default function ProductCard({ product }: Props) {
       {/* Imagen */}
       <div className="px-4">
         <div className="bg-muted flex items-center justify-center rounded-xl overflow-hidden aspect-square">
-          <img
-            src="https://pasteleriafront.vercel.app/placeholder.svg?height=200&width=200"
-            alt="Producto"
-            className="h-full w-full object-cover"
-          />
+          {product.image && (
+            <img
+              src={
+                product.image
+                  ? `${import.meta.env.VITE_IMAGE_URL}${product.image}`
+                  : "https://placehold.co/120x120?text=Sin+Imagen"
+              }
+              alt={product.name}
+              className="w-full h-full object-cover"
+            />
+          )}
         </div>
       </div>
 
@@ -86,22 +92,19 @@ export default function ProductCard({ product }: Props) {
           className="w-full"
           variant="default"
           disabled={
-            !product.active ||
-            product.stock <= 0 ||
-            currentQty >= product.stock
+            !product.active || product.stock <= 0 || currentQty >= product.stock
           }
         >
           <ShoppingCart className="w-4 h-4 mr-2" />
           {!product.active
             ? "No disponible"
             : product.stock <= 0
-              ? "Sin stock"
-              : currentQty >= product.stock
-                ? "Stock máximo"
-                : "Agregar"}
+            ? "Sin stock"
+            : currentQty >= product.stock
+            ? "Stock máximo"
+            : "Agregar"}
         </Button>
       </CardContent>
     </Card>
-
   );
 }
