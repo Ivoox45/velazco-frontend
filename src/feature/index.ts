@@ -5,3 +5,4 @@ export { EntregasPage } from "./dispatch";
 export { ProduccionPage } from "./production";
 export { OrderProductionPage } from "./production-orders";
 export { UserPage } from "./users";
+export { DashboardPage } from "./dashboard";

@@ -15,7 +15,6 @@ import {
 
 import { NavProjects } from "@/components/nav-projects";
 import { NavUser } from "@/components/nav-user";
-import { TeamSwitcher } from "@/components/team-switcher";
 import {
     Sidebar,
     SidebarContent,
@@ -27,9 +26,9 @@ import {
 // Solo usamos proyectos ahora
 const data = {
     user: {
-        name: "shadcn",
-        email: "m@example.com",
-        avatar: "/avatars/shadcn.jpg",
+        name: "Said López",
+        email: "said@gmail.com",
+        avatar: "/nagi.jpg",
     },
     teams: [
         {
@@ -51,7 +50,7 @@ const data = {
     projects: [
         {
             name: "Dashboard",
-            url: "/dashboard", // <- o "/dashboard" si defines esa ruta después
+            url: "/dashboard",
             icon: LayoutDashboardIcon,
         },
         {
@@ -96,7 +95,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     return (
         <Sidebar collapsible="icon" {...props}>
             <SidebarHeader>
-                <TeamSwitcher teams={data.teams} />
+                <img
+                    src="/logo.png"
+                    alt="Company Logo"
+                    style={{ width: "120px", height: "auto", margin: "auto " }}
+                />
             </SidebarHeader>
             <SidebarContent>
                 <NavProjects projects={data.projects} />

@@ -57,7 +57,7 @@ export default function ImageCropDialog({
     return (
         <Dialog open={open} onOpenChange={onClose}>
             <DialogContent className="w-[90vw] max-w-3xl h-[500px] flex flex-col gap-4">
-                {/* 👇 ACCESIBILIDAD */}
+
                 <DialogHeader>
                     <DialogTitle>Recorta tu imagen</DialogTitle>
                     <DialogDescription>
@@ -79,7 +79,6 @@ export default function ImageCropDialog({
                     />
                 </div>
 
-                {/* Botones */}
                 <div className="flex justify-end gap-2">
                     <Button variant="outline" onClick={onClose}>
                         Cancelar

@@ -9,13 +9,11 @@ import type {
     ProductUpdateActiveResponse,
 } from "../types";
 
-// ✅ Obtener todos los productos
 export async function getProducts(): Promise<ProductListResponse[]> {
     const response = await axios.get("/products");
     return response.data;
 }
 
-// ✅ Crear producto (con imagen opcional)
 export async function createProduct(
     product: CreateProduct
 ): Promise<ProductCreateResponse> {
@@ -33,7 +31,6 @@ export async function createProduct(
     return response.data;
 }
 
-// ✅ Actualizar producto completo (con imagen opcional)
 export async function updateProduct(
     id: number,
     product: UpdateProduct
@@ -52,7 +49,6 @@ export async function updateProduct(
     return response.data;
 }
 
-// ✅ Cambiar solo el estado "activo" del producto
 export async function updateProductActive(
     id: number,
     activeStatus: UpdateProductActive
@@ -61,7 +57,6 @@ export async function updateProductActive(
     return response.data;
 }
 
-// ✅ Eliminar producto
 export async function deleteProduct(id: number): Promise<void> {
     await axios.delete(`/products/${id}`);
 }

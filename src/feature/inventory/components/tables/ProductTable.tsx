@@ -5,6 +5,17 @@ import useDeleteProduct from "../../hooks/useDeleteProduct";
 import useUpdateProductActive from "../../hooks/useUpdateProductActive";
 import ProductUpdateForm from "../forms/ProductUpdateForm";
 import type { ProductListResponse } from "../../types";
+import {
+    AlertDialog,
+    AlertDialogTrigger,
+    AlertDialogContent,
+    AlertDialogHeader,
+    AlertDialogFooter,
+    AlertDialogTitle,
+    AlertDialogDescription,
+    AlertDialogCancel,
+    AlertDialogAction,
+} from "@/components/ui/alert-dialog";
 
 import {
     Table,
@@ -17,6 +28,14 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+
+// ✅ Función para formatear moneda en soles peruanos
+const formatCurrency = (value: number) =>
+    new Intl.NumberFormat("es-PE", {
+        style: "currency",
+        currency: "PEN",
+        minimumFractionDigits: 2,
+    }).format(value);
 
 export default function ProductTable() {
     const { data, isLoading, error } = useGetProducts();
@@ -74,7 +93,9 @@ export default function ProductTable() {
                         <TableRow key={product.id}>
                             <TableCell>{product.id}</TableCell>
                             <TableCell>{product.name}</TableCell>
-                            <TableCell>${product.price.toFixed(2)}</TableCell>
+                            <TableCell>
+                                {formatCurrency(product.price)}
+                            </TableCell>
                             <TableCell>{product.stock}</TableCell>
                             <TableCell>
                                 <Switch
@@ -94,13 +115,38 @@ export default function ProductTable() {
                                         </Button>
                                     }
                                 />
-                                <Button
-                                    size="sm"
-                                    variant="destructive"
-                                    onClick={() => handleDelete(product.id)}
-                                >
-                                    Eliminar
-                                </Button>
+
+                                <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                        <Button size="sm" variant="destructive">
+                                            Eliminar
+                                        </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                            <AlertDialogTitle>
+                                                ¿Eliminar producto?
+                                            </AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                                Esta acción no se puede
+                                                deshacer. El producto será
+                                                eliminado permanentemente.
+                                            </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                            <AlertDialogCancel>
+                                                Cancelar
+                                            </AlertDialogCancel>
+                                            <AlertDialogAction
+                                                onClick={() =>
+                                                    handleDelete(product.id)
+                                                }
+                                            >
+                                                Confirmar
+                                            </AlertDialogAction>
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
                             </TableCell>
                         </TableRow>
                     ))}

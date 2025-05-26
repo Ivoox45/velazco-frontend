@@ -3,8 +3,6 @@ import { createBrowserRouter, Navigate, RouterProvider } from "react-router";
 import { ThemeProvider } from "next-themes";
 import { CartProvider } from "@/providers/CartProvider";
 import QueryProvider from "./providers/QueryProvider";
-
-import Home from "./router";
 import Layout from "./router/layout";
 
 import "./index.css";
@@ -16,6 +14,7 @@ import {
     ProduccionPage,
     OrderProductionPage,
     UserPage,
+    DashboardPage,
 } from "@/feature";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -24,7 +23,7 @@ const router = createBrowserRouter([
         element: <Layout />,
         children: [
             { path: "/", element: <Navigate to="/dashboard" replace /> },
-            { path: "dashboard", element: <Home /> },
+            { path: "dashboard", element: <DashboardPage /> },
             { path: "inventario", element: <InventarioPage /> },
             { path: "pedidos", element: <PedidosPage /> },
             { path: "caja", element: <CajaPage /> },
@@ -41,7 +40,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
         <QueryProvider>
             <CartProvider>
                 <RouterProvider router={router} />
-                <Toaster />
+                <Toaster richColors/>
             </CartProvider>
         </QueryProvider>
     </ThemeProvider>

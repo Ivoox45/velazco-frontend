@@ -9,6 +9,17 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+    AlertDialog,
+    AlertDialogTrigger,
+    AlertDialogContent,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogCancel,
+    AlertDialogAction,
+} from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { Trash2, Pencil } from "lucide-react";
 
@@ -65,24 +76,59 @@ export default function CategoriesModal() {
                                         >
                                             <Pencil className="w-4 h-4" />
                                         </Button>
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            onClick={() =>
-                                                deleteCategory(cat.id, {
-                                                    onSuccess: () =>
-                                                        toast.success(
-                                                            "Categoría eliminada"
-                                                        ),
-                                                    onError: () =>
-                                                        toast.error(
-                                                            "Error al eliminar"
-                                                        ),
-                                                })
-                                            }
-                                        >
-                                            <Trash2 className="w-4 h-4 text-red-500" />
-                                        </Button>
+
+                                        <AlertDialog>
+                                            <AlertDialogTrigger asChild>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                >
+                                                    <Trash2 className="w-4 h-4 text-red-500" />
+                                                </Button>
+                                            </AlertDialogTrigger>
+                                            <AlertDialogContent>
+                                                <AlertDialogHeader>
+                                                    <AlertDialogTitle>
+                                                        ¿Eliminar categoría?
+                                                    </AlertDialogTitle>
+                                                    <AlertDialogDescription>
+                                                        Esta acción no se puede
+                                                        deshacer. ¿Deseas
+                                                        eliminar{" "}
+                                                        <strong>
+                                                            {cat.name}
+                                                        </strong>
+                                                        ?
+                                                    </AlertDialogDescription>
+                                                </AlertDialogHeader>
+                                                <AlertDialogFooter>
+                                                    <AlertDialogCancel>
+                                                        Cancelar
+                                                    </AlertDialogCancel>
+                                                    <AlertDialogAction
+                                                        onClick={() =>
+                                                            deleteCategory(
+                                                                cat.id,
+                                                                {
+                                                                    onSuccess:
+                                                                        () =>
+                                                                            toast.success(
+                                                                                "Categoría eliminada"
+                                                                            ),
+                                                                    onError:
+                                                                        () =>
+                                                                            toast.error(
+                                                                                "No se puede eliminar esta categoría porque está asociada a productos."
+                                                                            ),
+                                                                }
+                                                            )
+                                                        }
+                                                    >
+                                                        Eliminar
+                                                    </AlertDialogAction>
+                                                </AlertDialogFooter>
+                                            </AlertDialogContent>
+                                        </AlertDialog>
                                     </div>
                                 </li>
                             ))}
