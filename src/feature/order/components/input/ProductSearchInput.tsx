@@ -4,6 +4,7 @@ import { Search } from "lucide-react";
 type Props = {
   value: string;
   onChange: (value: string) => void;
+   className?: string; 
 };
 
 export default function ProductSearchInput({ value, onChange }: Props) {
