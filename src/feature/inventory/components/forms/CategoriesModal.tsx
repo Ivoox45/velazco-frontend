@@ -26,6 +26,7 @@ import { Trash2, Pencil } from "lucide-react";
 import { useGetCategories, useDeleteCategory } from "@/feature/inventory/hooks";
 import CategoryCreateForm from "./CategoryCreateForm";
 import CategoryEditForm from "./CategoryEditForm";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function CategoriesModal() {
     const { data: categories, isLoading } = useGetCategories();
@@ -49,7 +50,23 @@ export default function CategoriesModal() {
                     </DialogHeader>
 
                     <div className="space-y-4">
-                        {isLoading && <p>Cargando categorías...</p>}
+                        {isLoading && (
+                            <div className="space-y-2">
+                                {[...Array(4)].map((_, i) => (
+                                    <div
+                                        key={i}
+                                        className="flex justify-between items-center border px-3 py-2 rounded"
+                                    >
+                                        <Skeleton className="h-4 w-2/3" />
+                                        <div className="flex gap-2">
+                                            <Skeleton className="h-8 w-8 rounded-full" />
+                                            <Skeleton className="h-8 w-8 rounded-full" />
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
                         {!isLoading && categories?.length === 0 && (
                             <p className="text-muted-foreground">
                                 No hay categorías registradas.

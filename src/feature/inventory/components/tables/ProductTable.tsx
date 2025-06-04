@@ -28,6 +28,9 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertTriangle } from "lucide-react";
 
 // ✅ Función para formatear moneda en soles peruanos
 const formatCurrency = (value: number) =>
@@ -57,22 +60,37 @@ export default function ProductTable() {
     };
 
     const handleDelete = (id: number) => {
-        if (confirm("¿Estás seguro de eliminar este producto?")) {
-            deleteProduct(id, {
-                onSuccess: () => {
-                    toast.success("Producto eliminado");
-                },
-                onError: () => {
-                    toast.error("Error al eliminar producto");
-                },
-            });
-        }
+        deleteProduct(id, {
+            onSuccess: () => {
+                toast.success("Producto eliminado");
+            },
+            onError: () => {
+                toast.error("Error al eliminar producto");
+            },
+        });
     };
 
     if (isLoading)
-        return <p className="text-gray-600">Cargando productos...</p>;
+        return (
+            <div className="space-y-2">
+                {[...Array(5)].map((_, i) => (
+                    <Skeleton key={i} className="h-10 w-full" />
+                ))}
+            </div>
+        );
+
     if (error)
-        return <p className="text-red-600">Error al cargar los productos</p>;
+        return (
+            <Alert variant="destructive" className="flex items-center gap-2">
+                <AlertTriangle className="h-5 w-5 text-red-500" />
+                <div>
+                    <AlertTitle>Error</AlertTitle>
+                    <AlertDescription>
+                        No se pudo cargar la lista de productos.
+                    </AlertDescription>
+                </div>
+            </Alert>
+        );
 
     return (
         <div className="mt-6 overflow-x-auto">
