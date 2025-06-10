@@ -5,7 +5,7 @@ interface OrderTabsProps {
     onChange: (status: string) => void;
 }
 
-export function OrderTabs({ status, onChange }: OrderTabsProps) {
+export default function OrderTabs({ status, onChange }: OrderTabsProps) {
     return (
         <Tabs value={status} onValueChange={onChange} className="w-full">
             <TabsList className="w-full justify-between">
