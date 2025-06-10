@@ -1,11 +1,12 @@
 import { Input } from "@/components/ui/input";
 
-interface SaleSearchInputProps {
+interface DispatchSearchInputProps {
     value: string;
     onChange: (value: string) => void;
 }
 
-export default function SaleSearchInput({ value, onChange }: SaleSearchInputProps) {
+
+export default function DispatchSearchInput({value, onChange}: DispatchSearchInputProps) {
     return (
         <Input
             placeholder="Buscar por cliente..."
@@ -13,4 +14,5 @@ export default function SaleSearchInput({ value, onChange }: SaleSearchInputProp
             onChange={(e) => onChange(e.target.value)}
         />
     );
+
 }

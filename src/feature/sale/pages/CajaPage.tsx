@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { OrderCard } from "../components/cards/OrderCard";
-import { SaleSearchInput } from "../components/input/SaleSearchInput";
-import { OrderTabs } from "../components/tabs/OrderTabs";
+import SaleSearchInput  from "../components/input/SaleSearchInput";
+import  OrderTabs from "../components/tabs/OrderTabs";
 import useGetOrdersByStatus from "../hooks/useGetOrdersByStatus";
 import useCancelOrder from "../hooks/useCancelOrder";
 import useConfirmSale from "../hooks/useConfirmSale";
@@ -99,7 +99,7 @@ export default function CajaPage() {
                         status={status}
                         onChange={(newStatus) => {
                             setStatus(newStatus);
-                            setPage(0); // Reset page when changing status
+                            setPage(0); 
                         }}
                     />
                 </div>

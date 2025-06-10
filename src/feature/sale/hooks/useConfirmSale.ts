@@ -18,6 +18,12 @@ export default function useConfirmSale() {
             queryClient.invalidateQueries({
                 predicate: (query) => query.queryKey[0] === "orders",
             });
+             queryClient.invalidateQueries({
+                predicate: (query) => query.queryKey[0] === "dispatch-orders",
+            });
+            queryClient.invalidateQueries({
+            predicate: (query) => query.queryKey[0] === "products", 
+            });
         },
     });
 }
