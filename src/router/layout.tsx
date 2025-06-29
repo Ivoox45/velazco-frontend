@@ -17,7 +17,7 @@ export default function Layout() {
         "/entregas": "Entregas",
         "/produccion": "Producción",
         "/ordenes-produccion": "Órdenes de Producción",
-        "/usuarios": "Usuarios",
+        "/usuarios": "Usuarios y Roles",
     };
 
     const currentPath = location.pathname;
