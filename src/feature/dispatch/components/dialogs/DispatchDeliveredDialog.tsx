@@ -18,12 +18,12 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { toast } from "sonner";
 import { useConfirmDispatch } from "../../hooks";
-import type { DispatchOrder } from "../../types";
+import type { DeliveredOrder } from "../../types";
 
 interface DispatchConfirmDialogProps {
   open: boolean;
   onClose: () => void;
-  order: DispatchOrder | null;
+  order: DeliveredOrder | null;
 }
 
 export default function DispatchConfirmDialog({
@@ -37,7 +37,7 @@ export default function DispatchConfirmDialog({
   console.log("🧾 Pedido entregado:", order);
 
   const subtotal = order.details.reduce(
-    (sum, item) => sum + item.quantity * item.unitPrice,
+    (sum, item) => sum + item.quantity * parseFloat(item.unitPrice),
     0
   );
 
@@ -87,10 +87,10 @@ export default function DispatchConfirmDialog({
                 <TableCell>{item.product.name}</TableCell>
                 <TableCell className="text-right">{item.quantity}</TableCell>
                 <TableCell className="text-right">
-                  ${item.unitPrice.toFixed(2)}
+                  ${parseFloat(item.unitPrice).toFixed(2)}
                 </TableCell>
                 <TableCell className="text-right">
-                  ${(item.quantity * item.unitPrice).toFixed(2)}
+                  ${(item.quantity * parseFloat(item.unitPrice)).toFixed(2)}
                 </TableCell>
               </TableRow>
             ))}
@@ -106,7 +106,7 @@ export default function DispatchConfirmDialog({
           <Button onClick={onClose} variant="outline">
             {order.status === "ENTREGADO" ? "Cerrar" : "Cancelar"}
           </Button>
-          {order.status === "PAGADO" && (
+          {order.status !== "ENTREGADO" && (
             <Button onClick={handleConfirm} disabled={isLoading}>
               {isLoading ? "Confirmando..." : "Confirmar Entrega"}
             </Button>
