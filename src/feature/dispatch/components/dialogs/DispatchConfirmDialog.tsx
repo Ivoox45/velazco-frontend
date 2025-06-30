@@ -32,8 +32,12 @@ export default function DispatchConfirmDialog({
   onClose,
   order,
 }: DispatchConfirmDialogProps) {
-  const { mutate, isLoading } = useConfirmDispatch() as UseMutationResult<void, Error, number, unknown>;
-
+  const { mutate, isPending } = useConfirmDispatch() as UseMutationResult<
+    void,
+    Error,
+    number,
+    unknown
+  >;
 
   if (!order) return null;
 
@@ -113,8 +117,8 @@ export default function DispatchConfirmDialog({
             {order.status === "ENTREGADO" ? "Cerrar" : "Cancelar"}
           </Button>
           {order.status !== "ENTREGADO" && (
-            <Button onClick={handleConfirm} disabled={isLoading}>
-              {isLoading ? "Confirmando..." : "Confirmar Entrega"}
+            <Button onClick={handleConfirm} disabled={isPending}>
+              {isPending ? "Confirmando..." : "Confirmar Entrega"}
             </Button>
           )}
         </DialogFooter>

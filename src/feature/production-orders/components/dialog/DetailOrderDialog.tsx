@@ -23,24 +23,37 @@ export default function DetailOrderDialog({
 }: DetailOrderDialogProps) {
   if (!order) return null;
 
-  const isCreateResponse = (obj: any): obj is ProductionCreateResponseDto => {
+  const isCreateResponse = (
+    obj: unknown
+  ): obj is ProductionCreateResponseDto => {
     return (
+      typeof obj === "object" &&
+      obj !== null &&
       "id" in obj &&
       "assignedTo" in obj &&
       "details" in obj &&
-      Array.isArray(obj.details) &&
-      obj.details.length > 0 &&
-      "product" in obj.details[0]
+      Array.isArray((obj as { details?: unknown }).details) &&
+      (obj as { details: unknown[] }).details.length > 0 &&
+      typeof (obj as { details: unknown[] }).details[0] === "object" &&
+      (obj as { details: { product?: unknown }[] }).details[0] !== null &&
+      "product" in (obj as { details: { product?: unknown }[] }).details[0]
     );
   };
 
-  const isHistoryResponse = (obj: any): obj is ProductionHistoryResponseDto => {
+  const isHistoryResponse = (
+    obj: unknown
+  ): obj is ProductionHistoryResponseDto => {
     return (
+      typeof obj === "object" &&
+      obj !== null &&
       "orderNumber" in obj &&
       "products" in obj &&
-      Array.isArray(obj.products) &&
-      obj.products.length > 0 &&
-      "productName" in obj.products[0]
+      Array.isArray((obj as { products?: unknown }).products) &&
+      (obj as { products: unknown[] }).products.length > 0 &&
+      typeof (obj as { products: unknown[] }).products[0] === "object" &&
+      (obj as { products: { productName?: unknown }[] }).products[0] !== null &&
+      "productName" in
+        (obj as { products: { productName?: unknown }[] }).products[0]
     );
   };
 

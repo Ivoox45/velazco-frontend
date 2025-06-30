@@ -13,7 +13,6 @@ import type {
   StartProduct,
   ProductForFinish,
   ProductOrder,
-  ProductoForm,
 } from "../types";
 
 export default function ProduccionPage() {
@@ -65,7 +64,7 @@ export default function ProduccionPage() {
     setStatus("PRODUCCION");
   };
 
-  const handleFinishOrder = (resultados: ProductoForm[]) => {
+  const handleFinishOrder = () => {
     setFinishDialogOpen(false);
     // puedes guardar resultados en backend aquí si quieres
   };

@@ -10,7 +10,16 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
-const roles = [
+type RoleVariant = "admin" | "vendedor" | "cajero" | "produccion" | "entregas";
+
+type Role = {
+  label: string;
+  variant: RoleVariant;
+  text: string;
+  count: number;
+};
+
+const roles: Role[] = [
   {
     label: "Administrador",
     variant: "admin",
@@ -66,9 +75,7 @@ export default function RolesSystemDialog({
               <tr>
                 <th className="px-4 py-3 text-left font-medium w-32">Rol</th>
                 <th className="px-4 py-3 text-left font-medium">Descripción</th>
-                <th className="px-4 py-3 text-left font-medium w-20">
-                  Usuarios
-                </th>
+                <th className="px-4 py-3 text-left font-medium">Cantidad</th>
               </tr>
             </thead>
             <tbody>
@@ -76,7 +83,7 @@ export default function RolesSystemDialog({
                 <tr key={role.label} className="border-b last:border-b-0">
                   <td className="px-4 py-3">
                     <Badge
-                      variant={role.variant as any}
+                      variant={role.variant as RoleVariant}
                       className="font-semibold px-4 py-1 rounded-full"
                     >
                       {role.label}

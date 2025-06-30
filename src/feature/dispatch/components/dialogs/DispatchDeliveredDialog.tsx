@@ -31,7 +31,7 @@ export default function DispatchConfirmDialog({
   onClose,
   order,
 }: DispatchConfirmDialogProps) {
-  const { mutate, isLoading } = useConfirmDispatch();
+  const { mutate, status } = useConfirmDispatch();
 
   if (!order || order.status !== "ENTREGADO") return null;
   console.log("🧾 Pedido entregado:", order);
@@ -107,8 +107,8 @@ export default function DispatchConfirmDialog({
             {order.status === "ENTREGADO" ? "Cerrar" : "Cancelar"}
           </Button>
           {order.status !== "ENTREGADO" && (
-            <Button onClick={handleConfirm} disabled={isLoading}>
-              {isLoading ? "Confirmando..." : "Confirmar Entrega"}
+            <Button onClick={handleConfirm} disabled={status === "pending"}>
+              {status === "pending" ? "Confirmando..." : "Confirmar Entrega"}
             </Button>
           )}
         </DialogFooter>
