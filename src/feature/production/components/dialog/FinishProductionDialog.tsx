@@ -10,14 +10,14 @@ import {
 import { Button } from "@/components/ui/button";
 import { CheckCircle, XCircle } from "lucide-react";
 import { useState, useEffect } from "react";
-import type { Product, ProductoForm } from "../../types";
+import type { ProductForFinish, ProductoForm } from "../../types";
 
 type FinishProductionDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onFinish: (data: ProductoForm[]) => void;
   onCancel: () => void;
-  products: Product[];
+  products: ProductForFinish[];
   instrucciones?: string;
 };
 
@@ -37,7 +37,6 @@ export default function FinishProductionDialog({
     }))
   );
 
-  // Resetear al abrir/cambiar productos
   useEffect(() => {
     if (open) {
       setResultados(
@@ -50,7 +49,6 @@ export default function FinishProductionDialog({
     }
   }, [open, products]);
 
-  // Validación simple
   const esValido = resultados.every((r, i) => {
     if (r.estado === "COMPLETADO") return true;
     return (
@@ -83,7 +81,7 @@ export default function FinishProductionDialog({
             Finalizar Orden de Producción
           </DialogTitle>
           <DialogDescription className="text-[15px] md:text-[16px] text-gray-600 mt-0 mb-2">
-            Orden OP-2023-042 - Especifique el resultado de cada producto
+            Especifique el resultado de cada producto
           </DialogDescription>
         </DialogHeader>
         {/* Instrucciones */}
@@ -94,7 +92,12 @@ export default function FinishProductionDialog({
         {/* Productos */}
         <div className="space-y-6">
           {products.map((p, idx) => {
-            const form = resultados[idx];
+            // Aseguramos que form siempre tenga valor para evitar errores
+            const form = resultados[idx] || {
+              estado: "COMPLETADO",
+              cantidadProducida: p.cantidad,
+              motivo: "",
+            };
             return (
               <div
                 key={idx}

@@ -18,45 +18,12 @@ type StartProductionDialogProps = {
   products?: StartProduct[];
 };
 
-const DEFAULT_PRODUCTS: StartProduct[] = [
-  {
-    producto: "Torta de Chocolate",
-    cantidad: "10 unidades",
-    responsable: "Juan Pérez",
-  },
-  {
-    producto: "Galletas de Avena",
-    cantidad: "120 unidades",
-    responsable: "María López",
-  },
-  {
-    producto: "Brownies",
-    cantidad: "30 unidades",
-    responsable: "Carlos Gómez",
-  },
-  {
-    producto: "Alfajores",
-    cantidad: "50 unidades",
-    responsable: "Ana Rodríguez",
-  },
-  {
-    producto: "Cheesecake",
-    cantidad: "8 unidades",
-    responsable: "Carlos Gómez",
-  },
-  {
-    producto: "Cupcakes de Vainilla",
-    cantidad: "48 unidades",
-    responsable: "María López",
-  },
-];
-
 export default function StartProductionDialog({
   open,
   onOpenChange,
   onStart,
   onCancel,
-  products = DEFAULT_PRODUCTS,
+  products = [],
 }: StartProductionDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -66,8 +33,7 @@ export default function StartProductionDialog({
             Iniciar Producción de Orden
           </DialogTitle>
           <DialogDescription className="text-[15px] text-gray-600 mt-0 mb-2">
-            Orden OP-2023-042 - Confirmar inicio de producción para todos los
-            productos
+            Confirmar inicio de producción para todos los productos
           </DialogDescription>
         </DialogHeader>
         {/* Lista de productos */}
@@ -89,15 +55,11 @@ export default function StartProductionDialog({
                   <span className="flex text-[16px] text-blue-900 leading-tight">
                     {item.cantidad}
                   </span>
-                  <span className="text-xs text-blue-700 leading-tight">
-                    Responsable: <span>{item.responsable}</span>
-                  </span>
                 </span>
               </li>
             ))}
           </ul>
         </div>
-        {/* Advertencia */}
         <div className="bg-yellow-50 border border-yellow-200 rounded-md px-4 py-2 text-[15px] mb-1">
           <span className="font-bold text-yellow-800">Importante: </span>
           <span className="text-yellow-900">

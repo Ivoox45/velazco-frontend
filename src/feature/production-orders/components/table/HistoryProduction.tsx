@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useGetProductionHistory } from "../../hooks";
 import {
   Table,
   TableBody,
@@ -10,49 +10,28 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import DetailOrderDialog from "../dialog/DetailOrderDialog";
-import type { Orden } from "../../types"; // <-- usa tu archivo central
-
-// --- Datos de ejemplo ---
-const DATA: Orden[] = [
-  {
-    numero: "OP-2023-044",
-    creacion: "24/04/2023",
-    fecha: "25/04/2023",
-    responsable: "Carlos Gómez",
-    estado: "Completada",
-    productos: [
-      { nombre: "Pan de Banana", cantidad: 15 },
-      { nombre: "Alfajores", cantidad: 40 },
-    ],
-  },
-  {
-    numero: "OP-2023-043",
-    creacion: "23/04/2023",
-    fecha: "26/04/2023",
-    responsable: "Carlos Gómez",
-    estado: "Completada",
-    productos: [
-      { nombre: "Cheesecake", cantidad: 8 },
-      { nombre: "Cupcakes", cantidad: 48 },
-    ],
-  },
-  // ...otros datos
-];
+import { DetailOrderDialog } from "../dialog";
+import { useState } from "react";
+import type { ProductionHistoryResponseDto } from "../../types";
 
 const PAGE_SIZE = 5;
 
 export default function HistoryProduction() {
+  const { data, isLoading, isError } = useGetProductionHistory();
   const [page, setPage] = useState(1);
   const [open, setOpen] = useState(false);
-  const [selectedOrder, setSelectedOrder] = useState<Orden | null>(null);
+  const [selectedOrder, setSelectedOrder] =
+    useState<ProductionHistoryResponseDto | null>(null);
 
-  const totalPages = Math.ceil(DATA.length / PAGE_SIZE);
+  if (isLoading) return <div>Cargando...</div>;
+  if (isError) return <div>Error cargando historial.</div>;
+
+  const totalPages = Math.ceil((data?.length || 0) / PAGE_SIZE);
   const startIdx = (page - 1) * PAGE_SIZE;
   const endIdx = startIdx + PAGE_SIZE;
-  const currentData = DATA.slice(startIdx, endIdx);
+  const currentData = (data || []).slice(startIdx, endIdx);
 
-  const handleOpenDetail = (order: Orden) => {
+  const handleOpenDetail = (order: ProductionHistoryResponseDto) => {
     setSelectedOrder(order);
     setOpen(true);
   };
@@ -73,25 +52,25 @@ export default function HistoryProduction() {
         </TableHeader>
         <TableBody>
           {currentData.map((row) => (
-            <TableRow key={row.numero}>
-              <TableCell>{row.numero}</TableCell>
-              <TableCell>{row.creacion}</TableCell>
-              <TableCell>{row.fecha}</TableCell>
+            <TableRow key={row.orderNumber}>
+              <TableCell>{row.orderNumber}</TableCell>
+              <TableCell>{row.date}</TableCell>
+              <TableCell>{row.date}</TableCell>
               <TableCell>
-                {row.productos.map((p, i) => (
-                  <span key={p.nombre}>
-                    {p.nombre} ({p.cantidad})
-                    {i < row.productos.length - 1 && ", "}
+                {row.products.map((p, i) => (
+                  <span key={p.productName}>
+                    {p.productName} ({p.quantity})
+                    {i < row.products.length - 1 && ", "}
                   </span>
                 ))}
               </TableCell>
-              <TableCell>{row.responsable}</TableCell>
+              <TableCell>{row.responsible}</TableCell>
               <TableCell>
                 <Badge
                   variant="estado_activo"
                   className="rounded-full bg-green-100 text-green-700 px-4 py-1 font-medium"
                 >
-                  {row.estado}
+                  {row.status}
                 </Badge>
               </TableCell>
               <TableCell>
@@ -137,7 +116,6 @@ export default function HistoryProduction() {
         </div>
       </div>
 
-      {/* Modal de Detalle */}
       <DetailOrderDialog order={selectedOrder} open={open} onClose={setOpen} />
     </div>
   );

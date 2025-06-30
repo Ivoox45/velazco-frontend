@@ -69,17 +69,6 @@ export default function DispatchConfirmDialog({
               locale: es,
             })}{" "}
             <br />
-            <strong>Fecha de entrega:</strong>{" "}
-            {order.dispatch
-              ? format(
-                  new Date(order.dispatch.deliveryDate),
-                  "dd/MM/yyyy - HH:mm",
-                  { locale: es }
-                )
-              : "No disponible"}{" "}
-            <br />
-            Entregado por:{" "}
-            {order.dispatch?.dispatchedBy.name ?? "No disponible"}
           </p>
         </DialogHeader>
 

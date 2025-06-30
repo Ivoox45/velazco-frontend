@@ -1,4 +1,3 @@
-import { useState } from "react";
 import {
   Table,
   TableBody,
@@ -11,78 +10,71 @@ import { Button } from "@/components/ui/button";
 import { Pencil, Trash2 } from "lucide-react";
 import DetailOrderDialog from "../dialog/DetailOrderDialog";
 import EditOrderDialog from "../dialog/EditOrderDialog";
-import type { Orden } from "../../types"; // <-- centralízalo
-
-// --- Datos de ejemplo iniciales ---
-const INITIAL_ORDERS: Orden[] = [
-  {
-    numero: "OP-2023-045",
-    creacion: "24/04/2023",
-    fecha: "25/04/2023",
-    prioridad: "Alta",
-    responsable: "Juan Pérez",
-    estado: "Pendiente",
-    productos: [
-      { nombre: "Torta de Chocolate", cantidad: 5, unidad: "unidades" },
-      { nombre: "Cupcakes de Vainilla", cantidad: 24, unidad: "unidades" },
-    ],
-  },
-  {
-    numero: "OP-2023-046",
-    creacion: "24/04/2023",
-    fecha: "26/04/2023",
-    prioridad: "Media",
-    responsable: "Ana Gómez",
-    estado: "Pendiente",
-    productos: [
-      { nombre: "Cheesecake", cantidad: 8, unidad: "unidades" },
-      { nombre: "Galletas", cantidad: 100, unidad: "unidades" },
-    ],
-  },
-  {
-    numero: "OP-2023-047",
-    creacion: "24/04/2023",
-    fecha: "27/04/2023",
-    prioridad: "Baja",
-    responsable: "María López",
-    estado: "Pendiente",
-    productos: [
-      { nombre: "Brownies", cantidad: 30, unidad: "unidades" },
-      { nombre: "Alfajores", cantidad: 50, unidad: "unidades" },
-    ],
-  },
-];
+import { useGetProductions, useDeleteProduction } from "../../hooks";
+import { useState } from "react";
+import type { ProductionCreateResponseDto } from "../../types";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 export default function OrderProduction() {
-  const [orders, setOrders] = useState<Orden[]>(INITIAL_ORDERS);
+  const { data: orders, isLoading, isError, refetch } = useGetProductions();
+  const deleteMutation = useDeleteProduction();
 
-  // Para detalle
+  // Dialog detalle y edición
   const [detalleOpen, setDetalleOpen] = useState(false);
-  const [ordenSeleccionada, setOrdenSeleccionada] = useState<Orden | null>(null);
-
-  // Para edición
+  const [ordenSeleccionada, setOrdenSeleccionada] =
+    useState<ProductionCreateResponseDto | null>(null);
   const [editOpen, setEditOpen] = useState(false);
-  const [ordenEditar, setOrdenEditar] = useState<Orden | null>(null);
+  const [ordenEditar, setOrdenEditar] =
+    useState<ProductionCreateResponseDto | null>(null);
+
+  // Dialog de confirmación de eliminación
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [ordenAEliminar, setOrdenAEliminar] = useState<number | null>(null);
 
   // Abrir detalle
-  const abrirDetalle = (order: Orden) => {
+  const abrirDetalle = (order: ProductionCreateResponseDto) => {
     setOrdenSeleccionada(order);
     setDetalleOpen(true);
   };
 
   // Abrir edición
-  const abrirEdicion = (order: Orden) => {
+  const abrirEdicion = (order: ProductionCreateResponseDto) => {
     setOrdenEditar(order);
     setEditOpen(true);
   };
 
-  // Guardar edición
-  const guardarEdicion = (ordenEditada: Orden) => {
-    setOrders((prev) =>
-      prev.map((o) => (o.numero === ordenEditada.numero ? ordenEditada : o))
-    );
-    setEditOpen(false);
+  // Abrir confirmación de eliminación
+  const pedirConfirmEliminacion = (id: number) => {
+    setOrdenAEliminar(id);
+    setDeleteDialogOpen(true);
   };
+
+  // Eliminar orden (tras confirmación)
+  const eliminarOrden = () => {
+    if (ordenAEliminar) {
+      deleteMutation.mutate(ordenAEliminar, {
+        onSuccess: () => {
+          refetch();
+          setDeleteDialogOpen(false);
+          setOrdenAEliminar(null);
+        },
+        onError: () => {
+          setDeleteDialogOpen(false);
+          setOrdenAEliminar(null);
+          // puedes mostrar toast.error si quieres
+        },
+      });
+    }
+  };
+
+  if (isLoading) return <div>Cargando...</div>;
+  if (isError) return <div>Error cargando órdenes.</div>;
 
   return (
     <div className="overflow-x-auto">
@@ -97,16 +89,16 @@ export default function OrderProduction() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {orders.map((order) => (
-            <TableRow key={order.numero}>
-              <TableCell>{order.numero}</TableCell>
-              <TableCell>{order.creacion}</TableCell>
-              <TableCell>{order.fecha}</TableCell>
+          {(orders || []).map((order) => (
+            <TableRow key={order.id}>
+              <TableCell>OP-{order.id.toString().padStart(6, "0")}</TableCell>
+              <TableCell>{order.productionDate}</TableCell>
+              <TableCell>{order.productionDate}</TableCell>
               <TableCell>
-                {order.productos.map((p, idx) => (
-                  <span key={p.nombre}>
-                    {p.nombre} ({p.cantidad})
-                    {idx < order.productos.length - 1 && ", "}
+                {order.details.map((p, idx) => (
+                  <span key={p.product.id}>
+                    {p.product.name} ({p.requestedQuantity})
+                    {idx < order.details.length - 1 && ", "}
                   </span>
                 ))}
               </TableCell>
@@ -126,7 +118,11 @@ export default function OrderProduction() {
                   >
                     <Pencil className="w-4 h-4" />
                   </Button>
-                  <Button variant="ghost" size="icon">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => pedirConfirmEliminacion(order.id)}
+                  >
                     <Trash2 className="w-4 h-4" />
                   </Button>
                 </div>
@@ -136,20 +132,48 @@ export default function OrderProduction() {
         </TableBody>
       </Table>
 
-      {/* Modal de Detalle */}
       <DetailOrderDialog
         order={ordenSeleccionada}
         open={detalleOpen}
         onClose={setDetalleOpen}
       />
-
-      {/* Modal de Edición */}
       <EditOrderDialog
         order={ordenEditar}
         open={editOpen}
         onClose={setEditOpen}
-        onSave={guardarEdicion}
+        onSave={refetch}
       />
+
+      {/* Diálogo de confirmación de eliminación */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent className="max-w-[400px]">
+          <DialogHeader>
+            <DialogTitle>Cancelar Orden de Produccion</DialogTitle>
+          </DialogHeader>
+          <div className="text-base">
+            ¿Estás seguro de que deseas cancelar este pedido? Esta acción no se
+            puede deshacer.
+          </div>
+          <DialogFooter className="flex justify-end gap-2 pt-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setDeleteDialogOpen(false)}
+            >
+              No
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              onClick={eliminarOrden}
+              // CORREGIDO: quitar prop 'loading' que no existe en el Button personalizado
+              // loading={deleteMutation.isPending}  <-- elimina esta línea
+            >
+              Sí, cancelar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

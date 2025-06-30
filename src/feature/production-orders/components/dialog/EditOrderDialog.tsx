@@ -22,37 +22,21 @@ import {
   PopoverContent,
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
 import { Plus, Trash2 } from "lucide-react";
-import type { Orden, Producto } from "../../types";
+import { toast } from "sonner";
+import { useGetAvailableProducts } from "../../hooks";
+import { useUpdateProduction } from "../../hooks";
+import type { ProductionCreateResponseDto } from "../../types";
 
-// Helpers
-function parseFecha(fechaStr: string): Date {
-  const [day, month, year] = fechaStr.split("/").map(Number);
-  return new Date(year, month - 1, day);
-}
-
-const productOptions = [
-  { id: "cheesecake", name: "Cheesecake" },
-  { id: "galletas", name: "Galletas" },
-  { id: "torta_chocolate", name: "Torta de Chocolate" },
-  { id: "cupcakes_vainilla", name: "Cupcakes de Vainilla" },
-  { id: "brownies", name: "Brownies" },
-  { id: "alfajores", name: "Alfajores" },
-];
-
-const responsableOptions = [
-  { id: "resp1", name: "Juan Pérez" },
-  { id: "resp2", name: "Ana Gómez" },
-  { id: "resp3", name: "María López" },
-];
+const responsableOptions = [{ id: 1, name: "Administrador" }];
 
 interface EditOrderDialogProps {
   open: boolean;
-  order: Orden | null;
+  order: ProductionCreateResponseDto | null;
   onClose: (open: boolean) => void;
-  onSave: (orderEditado: Orden) => void;
+  onSave: () => void;
 }
 
 export default function EditOrderDialog({
@@ -63,62 +47,122 @@ export default function EditOrderDialog({
 }: EditOrderDialogProps) {
   const [fecha, setFecha] = React.useState<Date | undefined>(undefined);
   const [responsable, setResponsable] = React.useState("");
-  const [productos, setProductos] = React.useState<Producto[]>([]);
+  const [productos, setProductos] = React.useState<
+    { productId: number | ""; quantity: number | ""; comments?: string }[]
+  >([{ productId: "", quantity: "" }]);
   const [notas, setNotas] = React.useState("");
+  const [error, setError] = React.useState<string | null>(null);
 
-  // Sincroniza con la orden
+  const { data: products, isLoading: loadingProducts } =
+    useGetAvailableProducts();
+  const updateMutation = useUpdateProduction();
+
   React.useEffect(() => {
     if (order) {
-      setFecha(order.fecha ? parseFecha(order.fecha) : undefined);
-      setResponsable(order.responsable || "");
-      setProductos(order.productos ? order.productos.map((p) => ({ ...p })) : []);
-      setNotas(order.notas || "");
+      setFecha(
+        order.productionDate ? parseISO(order.productionDate) : undefined
+      );
+      setResponsable(order.assignedTo.id ? String(order.assignedTo.id) : "");
+      setProductos(
+        order.details.map((d) => ({
+          productId: d.product.id,
+          quantity: d.requestedQuantity,
+        }))
+      );
+      setNotas(order.details[0]?.comments || "");
     }
   }, [order]);
 
-  // Fechas ocupadas (sin la actual para permitir editar)
-  const fechasOcupadas = ["24/04/2023", "23/04/2023", "22/04/2023"].filter(
-    (f) => f !== order?.fecha
-  );
+  const isPastDate = (date: Date) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    date.setHours(0, 0, 0, 0);
+    return date < today;
+  };
 
-  if (!order) return null;
-
-  // Handlers
   const handleProductoChange = (
     idx: number,
-    key: "nombre" | "cantidad",
-    value: any
+    key: "productId" | "quantity",
+    value: string | number
   ) => {
     setProductos((productos) =>
       productos.map((prod, i) =>
-        i === idx
-          ? { ...prod, [key]: key === "cantidad" ? Number(value) : value }
-          : prod
+        i === idx ? { ...prod, [key]: value === "" ? "" : Number(value) } : prod
       )
     );
   };
 
   const handleAddProducto = () => {
-    setProductos([...productos, { nombre: "", cantidad: 1 }]);
+    if (productos.length >= 4) return; // Limitar máximo 4 productos
+    setProductos([...productos, { productId: "", quantity: "" }]);
   };
 
   const handleRemoveProducto = (idx: number) => {
-    setProductos(productos.filter((_, i) => i !== idx));
+    if (productos.length > 1 && idx !== 0) {
+      setProductos(productos.filter((_, i) => i !== idx));
+    }
   };
+
+  const selectedProductIds = productos
+    .map((p) => p.productId)
+    .filter((id): id is number => typeof id === "number");
+
+  // Productos disponibles que no están seleccionados aún
+  const availableProducts = (products || []).filter(
+    (p) => !selectedProductIds.includes(p.id)
+  );
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!fecha) return;
-    const fechaString = format(fecha, "dd/MM/yyyy");
-    onSave({
-      ...order,
-      fecha: fechaString,
-      responsable,
-      productos,
-      notas,
-    });
-    onClose(false);
+
+    if (!fecha) return setError("Debe seleccionar una fecha.");
+    if (!responsable) return setError("Debe seleccionar un responsable.");
+    if (notas.trim().length === 0)
+      return setError("Las notas son obligatorias.");
+    if (
+      productos.some(
+        (p) =>
+          !p.productId ||
+          !p.quantity ||
+          Number.isNaN(Number(p.productId)) ||
+          Number.isNaN(Number(p.quantity)) ||
+          Number(p.quantity) < 1
+      )
+    )
+      return setError("Debes seleccionar productos y cantidades válidas.");
+
+    if (!order) return;
+
+    setError(null);
+    updateMutation.mutate(
+      {
+        id: order.id,
+        data: {
+          productionDate: format(fecha, "yyyy-MM-dd"),
+          assignedToId: Number(responsable),
+          status: order.status,
+          details: productos.map((p) => ({
+            productId: Number(p.productId),
+            requestedQuantity: Number(p.quantity),
+            comments: notas,
+          })),
+        },
+      },
+      {
+        onSuccess: () => {
+          onSave();
+          onClose(false);
+          toast.success("Orden actualizada correctamente 🎉");
+        },
+        onError: (_err) => {
+          setError("Error al actualizar la orden. Intenta nuevamente." + _err);
+          toast.error("Error al actualizar la orden");
+        },
+      }
+    );
   };
+
+  if (!order) return null;
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -129,7 +173,12 @@ export default function EditOrderDialog({
           </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSave} className="space-y-6">
-          {/* Fecha y Responsable */}
+          {error && (
+            <div className="text-red-600 bg-red-100 border border-red-300 p-2 rounded text-sm">
+              {error}
+            </div>
+          )}
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium mb-1">
@@ -156,10 +205,7 @@ export default function EditOrderDialog({
                     selected={fecha}
                     onSelect={setFecha}
                     locale={es}
-                    fromDate={new Date()}
-                    disabled={(date) =>
-                      fechasOcupadas.includes(format(date, "dd/MM/yyyy"))
-                    }
+                    disabled={isPastDate}
                   />
                 </PopoverContent>
               </Popover>
@@ -169,12 +215,12 @@ export default function EditOrderDialog({
                 Responsable
               </label>
               <Select value={responsable} onValueChange={setResponsable}>
-                <SelectTrigger>
+                <SelectTrigger className="w-full">
                   <SelectValue placeholder="Asignar responsable" />
                 </SelectTrigger>
                 <SelectContent>
                   {responsableOptions.map((r) => (
-                    <SelectItem key={r.id} value={r.name}>
+                    <SelectItem key={r.id} value={String(r.id)}>
                       {r.name}
                     </SelectItem>
                   ))}
@@ -183,88 +229,102 @@ export default function EditOrderDialog({
             </div>
           </div>
 
-          {/* Productos */}
-          <div>
-            <div className="flex justify-between items-center mb-2">
-              <span className="font-medium text-sm">Productos</span>
+          {productos.length < 4 && availableProducts.length > 0 && (
+            <div className="mb-4">
               <Button
                 type="button"
                 variant="outline"
-                className="flex items-center gap-1 px-2 py-1 h-8 text-sm"
+                className="flex items-center gap-1 px-2 py-1 h-8 text-sm mb-4"
                 onClick={handleAddProducto}
               >
                 <Plus className="w-4 h-4" /> Añadir Producto
               </Button>
             </div>
-            <div className="space-y-2">
-              <div className="grid grid-cols-12 gap-2 text-xs font-medium text-gray-700 mb-1 pl-1">
-                <div className="col-span-6">Producto</div>
-                <div className="col-span-4">Cantidad</div>
-                <div className="col-span-2"></div>
-              </div>
-              {productos.map((prod, idx) => (
-                <div className="grid grid-cols-12 gap-2 items-center" key={idx}>
-                  <div className="col-span-6">
-                    <Select
-                      value={prod.nombre}
-                      onValueChange={(value) =>
-                        handleProductoChange(idx, "nombre", value)
-                      }
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Seleccionar producto" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {productOptions.map((p) => (
-                          <SelectItem key={p.id} value={p.name}>
+          )}
+
+          <div>
+            <div className="grid grid-cols-12 gap-2 text-xs font-medium text-gray-700 mb-1 pl-1">
+              <div className="col-span-6">Producto</div>
+              <div className="col-span-4">Cantidad</div>
+              <div className="col-span-2"></div>
+            </div>
+            {productos.map((prod, idx) => (
+              <div
+                key={idx}
+                className="grid grid-cols-12 gap-2 items-center mb-3"
+              >
+                <div className="col-span-6">
+                  <Select
+                    value={prod.productId ? String(prod.productId) : ""}
+                    onValueChange={(value) =>
+                      handleProductoChange(idx, "productId", value)
+                    }
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue
+                        placeholder={
+                          loadingProducts
+                            ? "Cargando..."
+                            : "Seleccionar producto"
+                        }
+                      />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {(products || [])
+                        .filter(
+                          (p) =>
+                            !selectedProductIds.includes(p.id) ||
+                            p.id === prod.productId
+                        )
+                        .map((p) => (
+                          <SelectItem key={p.id} value={String(p.id)}>
                             {p.name}
                           </SelectItem>
                         ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="col-span-4">
-                    <Input
-                      type="number"
-                      placeholder="Cantidad"
-                      min={1}
-                      className="w-full"
-                      value={prod.cantidad}
-                      onChange={(e) =>
-                        handleProductoChange(idx, "cantidad", e.target.value)
-                      }
-                    />
-                  </div>
-                  <div className="col-span-2 flex justify-center">
-                    {productos.length > 1 && (
-                      <Button
-                        type="button"
-                        size="icon"
-                        variant="ghost"
-                        onClick={() => handleRemoveProducto(idx)}
-                      >
-                        <Trash2 className="w-4 h-4 text-red-500" />
-                      </Button>
-                    )}
-                  </div>
+                    </SelectContent>
+                  </Select>
                 </div>
-              ))}
-            </div>
+                <div className="col-span-4">
+                  <Input
+                    type="number"
+                    placeholder="Cantidad"
+                    min={1}
+                    className="w-full"
+                    value={prod.quantity}
+                    onChange={(e) =>
+                      handleProductoChange(idx, "quantity", e.target.value)
+                    }
+                  />
+                </div>
+                <div className="col-span-2 flex justify-center">
+                  {productos.length > 1 && idx !== 0 && (
+                    <Button
+                      type="button"
+                      size="icon"
+                      variant="ghost"
+                      onClick={() => handleRemoveProducto(idx)}
+                    >
+                      <Trash2 className="w-4 h-4 text-red-500" />
+                    </Button>
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
 
-          {/* Notas */}
           <div>
             <label className="block text-sm font-medium mb-1">
-              Notas o Instrucciones Especiales
+              Notas o Instrucciones Especiales{" "}
+              <span className="text-red-500">*</span>
             </label>
             <Textarea
               placeholder="Añadir notas o instrucciones especiales para la producción..."
               value={notas}
               onChange={(e) => setNotas(e.target.value)}
+              required
             />
           </div>
 
-          {/* Footer */}
           <DialogFooter>
             <Button
               type="button"
@@ -273,7 +333,9 @@ export default function EditOrderDialog({
             >
               Cancelar
             </Button>
-            <Button type="submit">Guardar Cambios</Button>
+            <Button type="submit" disabled={updateMutation.isPending}>
+              Guardar Cambios
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

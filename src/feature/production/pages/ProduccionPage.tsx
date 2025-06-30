@@ -1,4 +1,3 @@
-// src/production/pages/ProduccionPage.tsx
 import { useState } from "react";
 import ProductionTabs from "../components/tabs/ProductionTabs";
 import ProductionTable from "../components/table/ProductionTable";
@@ -8,51 +7,58 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { UserIcon, PlayIcon, PackageIcon } from "lucide-react";
 import StartProductionDialog from "../components/dialog/StartProductionDialog";
 import FinishProductionDialog from "../components/dialog/FinishProductionDialog";
+import { useDailyProductions } from "../hooks";
 import type {
   EstadoProduccion,
+  StartProduct,
+  ProductForFinish,
   ProductOrder,
   ProductoForm,
-  FinishResult,
 } from "../types";
-
-// Ordenes listas para la tabla (con subtítulo y cantidad como string)
-const ORDERS: ProductOrder[] = [
-  {
-    producto: "Torta de Chocolate",
-    subtitulo: "Orden #OP-2023-042",
-    cantidad: "10 unidades",
-  },
-  {
-    producto: "Galletas de Avena",
-    subtitulo: "Orden #OP-2023-042",
-    cantidad: "120 unidades",
-  },
-  {
-    producto: "Brownies",
-    subtitulo: "Orden #OP-2023-042",
-    cantidad: "30 unidades",
-  },
-  {
-    producto: "Alfajores",
-    subtitulo: "Orden #OP-2023-042",
-    cantidad: "50 unidades",
-  },
-  {
-    producto: "Cheesecake",
-    subtitulo: "Orden #OP-2023-042",
-    cantidad: "8 unidades",
-  },
-  {
-    producto: "Cupcakes de Vainilla",
-    subtitulo: "Orden #OP-2023-042",
-    cantidad: "48 unidades",
-  },
-];
 
 export default function ProduccionPage() {
   const [status, setStatus] = useState<EstadoProduccion>("PENDIENTE");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [finishDialogOpen, setFinishDialogOpen] = useState(false);
+
+  // Obtener órdenes del día
+  const { data: dailyOrders, isLoading, isError } = useDailyProductions();
+
+  // Primera orden
+  const firstOrder = dailyOrders?.[0];
+
+  // Para StartProductionDialog
+  const productsForStart: StartProduct[] =
+    firstOrder?.details.map((prod) => ({
+      producto: prod.product.name,
+      cantidad: `${prod.requestedQuantity} unidades`,
+      responsable: prod.responsible?.name ?? "—",
+    })) || [];
+
+  // Para FinishProductionDialog y tabla
+  const productsForFinish: ProductForFinish[] =
+    firstOrder?.details.map((prod) => ({
+      producto: prod.product.name,
+      cantidad: prod.requestedQuantity,
+    })) || [];
+
+  // Para la tabla principal
+  const tableOrders: ProductOrder[] = productsForFinish.map((o) => ({
+    producto: o.producto,
+    cantidad: `${o.cantidad} unidades`,
+    subtitulo:
+      firstOrder && firstOrder.id
+        ? `Orden #OP-${String(firstOrder.id).padStart(6, "0")}`
+        : undefined,
+  }));
+
+  // Encabezado
+  const orderNumber =
+    firstOrder && firstOrder.id
+      ? `OP-${String(firstOrder.id).padStart(6, "0")}`
+      : "Sin orden";
+  const fechaOrden = firstOrder?.productionDate || "—";
+  const responsable = firstOrder?.assignedTo?.name || "—";
 
   const handleStartProduction = () => {
     setDialogOpen(false);
@@ -61,15 +67,22 @@ export default function ProduccionPage() {
 
   const handleFinishOrder = (resultados: ProductoForm[]) => {
     setFinishDialogOpen(false);
-    // Aquí solo para debug. Puedes guardar en backend o mostrar el resultado
-    const finalResults: FinishResult[] = resultados.map((r, idx) => ({
-      producto: ORDERS[idx].producto,
-      completado: r.estado === "COMPLETADO",
-      cantidadProducida: r.cantidadProducida,
-      motivo: r.motivo,
-    }));
-    console.log("Resultados enviados:", finalResults);
+    // puedes guardar resultados en backend aquí si quieres
   };
+
+  // Loader y error
+  if (isLoading)
+    return (
+      <div className="text-center text-gray-500 py-16">
+        Cargando orden del día...
+      </div>
+    );
+  if (isError)
+    return (
+      <div className="text-center text-red-500 py-16">
+        Error cargando orden del día.
+      </div>
+    );
 
   return (
     <div className="p-4 space-y-4">
@@ -79,17 +92,14 @@ export default function ProduccionPage() {
         onOpenChange={setDialogOpen}
         onStart={handleStartProduction}
         onCancel={() => setDialogOpen(false)}
+        products={productsForStart}
       />
       <FinishProductionDialog
         open={finishDialogOpen}
         onOpenChange={setFinishDialogOpen}
         onFinish={handleFinishOrder}
         onCancel={() => setFinishDialogOpen(false)}
-        // OJO: probablemente FinishProductionDialog espera otro tipo, puedes mapear si hace falta
-        products={ORDERS.map((o) => ({
-          producto: o.producto,
-          cantidad: Number(o.cantidad.split(" ")[0]),
-        }))}
+        products={productsForFinish}
       />
 
       {/* Encabezado de la orden */}
@@ -100,7 +110,7 @@ export default function ProduccionPage() {
               <span>
                 Orden del día:{" "}
                 <span className="font-semibold text-gray-600">
-                  OP-2023-042 - 24/04/2023
+                  {orderNumber} - {fechaOrden}
                 </span>
               </span>
               <Badge className="bg-neutral-100 text-neutral-700 font-semibold rounded-full px-3 py-1 text-xs shadow-none hover:bg-neutral-200 ml-0">
@@ -110,15 +120,14 @@ export default function ProduccionPage() {
             <div className="flex items-center gap-1 mt-2 text-[15px] text-gray-500 flex-wrap">
               <UserIcon className="w-4 h-4 opacity-60 flex-shrink-0" />
               <span className="font-bold">Responsable:</span>
-              <span className="break-words">
-                Carlos Gómez - Jefe de Producción
-              </span>
+              <span className="break-words">{responsable}</span>
             </div>
           </div>
           {status === "PENDIENTE" ? (
             <Button
               className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded-lg text-sm flex items-center gap-2 shadow-none w-full md:w-auto min-w-0"
               onClick={() => setDialogOpen(true)}
+              disabled={!firstOrder}
             >
               <PlayIcon className="w-4 h-4 mr-1" />
               Iniciar Producción
@@ -127,6 +136,7 @@ export default function ProduccionPage() {
             <Button
               className="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-2 rounded-lg text-sm flex items-center gap-2 shadow-none w-full md:w-auto min-w-0"
               onClick={() => setFinishDialogOpen(true)}
+              disabled={!firstOrder}
             >
               <PackageIcon className="w-5 h-5 mr-2" />
               Finalizar Orden
@@ -154,17 +164,12 @@ export default function ProduccionPage() {
                 <span className="font-semibold">
                   Instrucciones de la orden:
                 </span>
-                <span>
-                  {" "}
-                  Pedido urgente para evento corporativo. Las tortas deben tener
-                  decoración especial y las galletas empacadas en cajas de 10
-                  unidades.
-                </span>
+                <span> {firstOrder?.details[0]?.comments || "—"}</span>
               </div>
             )}
           </CardHeader>
           <CardContent>
-            <ProductionTable orders={ORDERS} />
+            <ProductionTable orders={tableOrders} />
           </CardContent>
         </Card>
       </div>

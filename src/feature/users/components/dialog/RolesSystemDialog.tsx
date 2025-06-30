@@ -1,7 +1,11 @@
-// users/components/dialog/RolesSystemDialog.tsx
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle,
-  DialogDescription, DialogFooter, DialogClose
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -49,7 +53,7 @@ export default function RolesSystemDialog({
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[750px]">
+      <DialogContent className="w-full max-w-[95vw] sm:max-w-[600px] md:max-w-[750px]">
         <DialogHeader>
           <DialogTitle>Roles del Sistema</DialogTitle>
           <DialogDescription>
@@ -57,13 +61,15 @@ export default function RolesSystemDialog({
           </DialogDescription>
         </DialogHeader>
         {/* Tabla de roles */}
-        <div className="border rounded-lg overflow-hidden">
-          <table className="w-full text-sm">
+        <div className="border rounded-lg overflow-x-auto">
+          <table className="w-full text-sm table-auto min-w-[600px]">
             <thead>
               <tr>
-                <th className="px-4 py-3 text-left font-medium">Rol</th>
+                <th className="px-4 py-3 text-left font-medium w-32">Rol</th>
                 <th className="px-4 py-3 text-left font-medium">Descripción</th>
-                <th className="px-4 py-3 text-left font-medium w-20">Usuarios</th>
+                <th className="px-4 py-3 text-left font-medium w-20">
+                  Usuarios
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -77,16 +83,23 @@ export default function RolesSystemDialog({
                       {role.label}
                     </Badge>
                   </td>
-                  <td className="px-4 py-3">{role.text}</td>
-                  <td className="px-4 py-3 font-medium text-gray-800">{role.count}</td>
+                  <td className="px-4 py-3 break-words max-w-xs">
+                    {role.text}
+                  </td>
+                  <td className="px-4 py-3 font-medium text-gray-800">
+                    {role.count}
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+
         {/* Nota */}
         <div className="mt-4 bg-blue-50 border border-blue-100 text-blue-900 rounded-lg px-4 py-3 text-[15px]">
-          <span className="font-semibold">Nota:</span> Los roles son predefinidos y están configurados con permisos específicos para cada función del sistema.
+          <span className="font-semibold">Nota:</span> Los roles son
+          predefinidos y están configurados con permisos específicos para cada
+          función del sistema.
         </div>
         <DialogFooter className="mt-3 flex justify-end">
           <DialogClose asChild>

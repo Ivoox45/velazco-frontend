@@ -17,68 +17,125 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
-import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { Plus, Trash2 } from "lucide-react";
+import { toast } from "sonner";
+import type { ProductionCreateRequestDto } from "../../types";
+import { useGetAvailableProducts } from "../../hooks";
+import { useCreateProduction } from "../../hooks";
 
-interface ProductRow {
-  id: number;
-  productId: string;
-  quantity: string;
-}
+const responsableOptions = [{ id: 1, name: "Administrador" }];
 
-const productOptions = [
-  { id: "cheesecake", name: "Cheesecake" },
-  { id: "galletas", name: "Galletas" },
-  { id: "torta_chocolate", name: "Torta de Chocolate" },
-  { id: "cupcakes_vainilla", name: "Cupcakes de Vainilla" },
-  { id: "brownies", name: "Brownies" },
-  { id: "alfajores", name: "Alfajores" },
-];
-
-const responsableOptions = [
-  { id: "resp1", name: "Juan Pérez" },
-  { id: "resp2", name: "Ana Gómez" },
-  { id: "resp3", name: "María López" },
-];
-
-export default function NewOrderDialog({ children }: { children: React.ReactNode }) {
+export default function NewOrderDialog({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const [open, setOpen] = React.useState(false);
-  const [products, setProducts] = React.useState<ProductRow[]>([
-    { id: Date.now(), productId: "", quantity: "" },
-  ]);
+  const [products, setProducts] = React.useState<
+    { productId: number | ""; quantity: number | "" }[]
+  >([{ productId: "", quantity: "" }]);
   const [fecha, setFecha] = React.useState<Date | undefined>(undefined);
   const [responsable, setResponsable] = React.useState("");
   const [notas, setNotas] = React.useState("");
+  const [error, setError] = React.useState<string | null>(null);
 
-  // Fechas ocupadas (formato dd/MM/yyyy)
-  const fechasOcupadas = ["24/04/2023", "23/04/2023", "22/04/2023"];
+  const { data: productCatalog, isLoading: loadingProducts } =
+    useGetAvailableProducts();
+  const createMutation = useCreateProduction();
+
+  const isPastDate = (date: Date) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    date.setHours(0, 0, 0, 0);
+    return date < today;
+  };
 
   const handleProductChange = (
     idx: number,
     key: "productId" | "quantity",
-    value: string
+    value: string | number
   ) => {
-    setProducts((products) =>
-      products.map((prod, i) => (i === idx ? { ...prod, [key]: value } : prod))
+    setProducts((prev) =>
+      prev.map((prod, i) =>
+        i === idx
+          ? {
+              ...prod,
+              [key]: value === "" ? "" : Number(value),
+            }
+          : prod
+      )
     );
   };
 
   const handleAddProduct = () => {
-    setProducts([...products, { id: Date.now(), productId: "", quantity: "" }]);
+    if (products.length >= 4) return; // máximo 4 productos
+    setProducts([...products, { productId: "", quantity: "" }]);
   };
 
   const handleRemoveProduct = (idx: number) => {
-    setProducts(products.filter((_, i) => i !== idx));
+    if (products.length > 1) {
+      setProducts(products.filter((_, i) => i !== idx));
+    }
   };
+
+  const selectedProductIds = products
+    .map((p) => p.productId)
+    .filter((id): id is number => typeof id === "number");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!fecha) return; // Validación: fecha obligatoria
-    // Aquí deberías guardar la orden (API, estado, etc.)
-    setOpen(false);
+
+    if (!fecha) return setError("Debe seleccionar una fecha.");
+    if (!responsable) return setError("Debe seleccionar un responsable.");
+    if (notas.trim().length === 0)
+      return setError("Las notas son obligatorias.");
+    if (
+      products.some(
+        (p) =>
+          !p.productId ||
+          !p.quantity ||
+          Number.isNaN(Number(p.productId)) ||
+          Number.isNaN(Number(p.quantity)) ||
+          Number(p.quantity) < 1
+      )
+    )
+      return setError("Debes seleccionar productos y cantidades válidas.");
+
+    const payload: ProductionCreateRequestDto = {
+      productionDate: format(fecha, "yyyy-MM-dd"),
+      assignedToId: Number(responsable),
+      status: "PENDIENTE",
+      details: products.map((p) => ({
+        productId: Number(p.productId),
+        requestedQuantity: Number(p.quantity),
+        comments: notas,
+      })),
+    };
+
+    setError(null);
+    createMutation.mutate(payload, {
+      onSuccess: () => {
+        setOpen(false);
+        setProducts([{ productId: "", quantity: "" }]);
+        setFecha(undefined);
+        setResponsable("");
+        setNotas("");
+        setError(null);
+        toast.success("Orden creada correctamente 🎉");
+      },
+      onError: (_err) => {
+        setError("Error al crear la orden. Intenta nuevamente." + _err);
+        toast.error("Error al crear la orden");
+      },
+    });
   };
 
   return (
@@ -95,7 +152,12 @@ export default function NewOrderDialog({ children }: { children: React.ReactNode
           tenga órdenes existentes.
         </div>
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Fecha y Responsable */}
+          {error && (
+            <div className="text-red-600 bg-red-100 border border-red-300 p-2 rounded text-sm">
+              {error}
+            </div>
+          )}
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium mb-1">
@@ -105,9 +167,15 @@ export default function NewOrderDialog({ children }: { children: React.ReactNode
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
-                    className={`w-full justify-start text-left font-normal ${!fecha ? "text-muted-foreground" : ""}`}
+                    className={`w-full justify-start text-left font-normal ${
+                      !fecha ? "text-muted-foreground" : ""
+                    }`}
                   >
-                    {fecha ? format(fecha, "dd/MM/yyyy", { locale: es }) : <span>Seleccionar fecha</span>}
+                    {fecha ? (
+                      format(fecha, "dd/MM/yyyy", { locale: es })
+                    ) : (
+                      <span>Seleccionar fecha</span>
+                    )}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0">
@@ -116,29 +184,22 @@ export default function NewOrderDialog({ children }: { children: React.ReactNode
                     selected={fecha}
                     onSelect={setFecha}
                     locale={es}
-                    fromDate={new Date()}
-                    disabled={(date) =>
-                      fechasOcupadas.includes(format(date, "dd/MM/yyyy"))
-                    }
+                    disabled={isPastDate}
                   />
                 </PopoverContent>
               </Popover>
-              <div className="text-xs text-gray-500 mt-1">
-                Solo se puede crear una orden por día. Fechas ocupadas:{" "}
-                {fechasOcupadas.join(", ")}
-              </div>
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">
                 Responsable
               </label>
               <Select value={responsable} onValueChange={setResponsable}>
-                <SelectTrigger>
+                <SelectTrigger className="w-full">
                   <SelectValue placeholder="Asignar responsable" />
                 </SelectTrigger>
                 <SelectContent>
                   {responsableOptions.map((r) => (
-                    <SelectItem key={r.id} value={r.name}>
+                    <SelectItem key={r.id} value={String(r.id)}>
                       {r.name}
                     </SelectItem>
                   ))}
@@ -147,92 +208,100 @@ export default function NewOrderDialog({ children }: { children: React.ReactNode
             </div>
           </div>
 
-          {/* Productos */}
-          <div>
-            <div className="flex justify-between items-center mb-2">
-              <span className="font-medium text-sm">Productos</span>
+          {products.length < 4 && (
+            <div className="mb-4">
               <Button
                 type="button"
                 variant="outline"
-                className="flex items-center gap-1 px-2 py-1 h-8 text-sm"
+                className="flex items-center gap-1 px-2 py-1 h-8 text-sm mb-4"
                 onClick={handleAddProduct}
               >
                 <Plus className="w-4 h-4" /> Añadir Producto
               </Button>
             </div>
-            <div className="space-y-2">
-              {/* Header de producto/cantidad SOLO una vez */}
-              <div className="grid grid-cols-12 gap-2 text-xs font-medium text-gray-700 mb-1 pl-1">
-                <div className="col-span-6">Producto</div>
-                <div className="col-span-4">Cantidad</div>
-                <div className="col-span-2"></div>
-              </div>
-              {products.map((prod, idx) => (
-                <div
-                  className="grid grid-cols-12 gap-2 items-center"
-                  key={prod.id}
-                >
-                  <div className="col-span-6">
-                    <Select
-                      value={prod.productId}
-                      onValueChange={(value) =>
-                        handleProductChange(idx, "productId", value)
-                      }
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Seleccionar producto" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {productOptions.map((p) => (
-                          <SelectItem key={p.id} value={p.id}>
+          )}
+
+          <div>
+            <div className="grid grid-cols-12 gap-2 text-xs font-medium text-gray-700 mb-1 pl-1">
+              <div className="col-span-6">Producto</div>
+              <div className="col-span-4">Cantidad</div>
+              <div className="col-span-2"></div>
+            </div>
+            {products.map((prod, idx) => (
+              <div
+                key={idx}
+                className="grid grid-cols-12 gap-2 items-center mb-3"
+              >
+                <div className="col-span-6">
+                  <Select
+                    value={prod.productId ? String(prod.productId) : ""}
+                    onValueChange={(value) =>
+                      handleProductChange(idx, "productId", value)
+                    }
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue
+                        placeholder={
+                          loadingProducts ? "Cargando..." : "Seleccionar producto"
+                        }
+                      />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {(productCatalog || [])
+                        .filter(
+                          (p) =>
+                            !selectedProductIds.includes(p.id) ||
+                            p.id === prod.productId
+                        )
+                        .map((p) => (
+                          <SelectItem key={p.id} value={String(p.id)}>
                             {p.name}
                           </SelectItem>
                         ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="col-span-4">
-                    <Input
-                      type="number"
-                      placeholder="Cantidad"
-                      min={1}
-                      className="w-full"
-                      value={prod.quantity}
-                      onChange={(e) =>
-                        handleProductChange(idx, "quantity", e.target.value)
-                      }
-                    />
-                  </div>
-                  <div className="col-span-2 flex justify-center">
-                    {products.length > 1 && (
-                      <Button
-                        type="button"
-                        size="icon"
-                        variant="ghost"
-                        onClick={() => handleRemoveProduct(idx)}
-                      >
-                        <Trash2 className="w-4 h-4 text-red-500" />
-                      </Button>
-                    )}
-                  </div>
+                    </SelectContent>
+                  </Select>
                 </div>
-              ))}
-            </div>
+                <div className="col-span-4">
+                  <Input
+                    type="number"
+                    placeholder="Cantidad"
+                    min={1}
+                    className="w-full"
+                    value={prod.quantity}
+                    onChange={(e) =>
+                      handleProductChange(idx, "quantity", e.target.value)
+                    }
+                  />
+                </div>
+                <div className="col-span-2 flex justify-center">
+                  {products.length > 1 && idx !== 0 && (
+                    <Button
+                      type="button"
+                      size="icon"
+                      variant="ghost"
+                      onClick={() => handleRemoveProduct(idx)}
+                    >
+                      <Trash2 className="w-4 h-4 text-red-500" />
+                    </Button>
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
 
-          {/* Notas */}
           <div>
             <label className="block text-sm font-medium mb-1">
-              Notas o Instrucciones Especiales
+              Notas o Instrucciones Especiales{" "}
+              <span className="text-red-500">*</span>
             </label>
             <Textarea
               placeholder="Añadir notas o instrucciones especiales para la producción..."
               value={notas}
               onChange={(e) => setNotas(e.target.value)}
+              required
             />
           </div>
 
-          {/* Footer */}
           <DialogFooter>
             <Button
               type="button"
@@ -241,7 +310,9 @@ export default function NewOrderDialog({ children }: { children: React.ReactNode
             >
               Cancelar
             </Button>
-            <Button type="submit">Crear Orden</Button>
+            <Button type="submit" disabled={createMutation.isPending}>
+              Crear Orden
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

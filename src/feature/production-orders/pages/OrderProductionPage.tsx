@@ -9,17 +9,12 @@ import { NewOrderDialog } from "../components";
 export default function OrderProductionPage() {
   return (
     <div className="p-4">
-      {/* Título para accesibilidad */}
-      <h1 className="text-2xl font-bold mb-4">
-        Gestión de Órdenes de Producción
-      </h1>
-
       {/* Botón alineado a la derecha con Dialog */}
       <div className="flex justify-end mb-3">
         <NewOrderDialog>
-          <Button>
-            <Plus className="mr-2 h-4 w-4" />
-            Nueva Orden
+          <Button className="w-full sm:w-auto flex items-center px-3 py-2 sm:px-4 sm:py-2">
+            <Plus className="h-4 w-4" />
+            <span className=" sm:inline ml-2">Nueva Orden</span>
           </Button>
         </NewOrderDialog>
       </div>
