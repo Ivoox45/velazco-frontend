@@ -9,7 +9,7 @@ import type {
 } from "../types";
 
 export async function getProductions(): Promise<ProductionCreateResponseDto[]> {
-  const res = await axios.get("/productions");
+  const res = await axios.get("/productions/pending");
   return res.data;
 }
 
@@ -42,4 +42,11 @@ export async function getProductionHistory(): Promise<
 export async function getAvailableProducts(): Promise<Product[]> {
   const response = await axios.get("/products/available");
   return response.data;
+}
+
+export async function getProductionById(
+  id: number
+): Promise<ProductionCreateResponseDto> {
+  const res = await axios.get(`/productions/${id}`);
+  return res.data;
 }

@@ -4,3 +4,4 @@ export { default as useGetProductions } from "./useGetProductions";
 export { default as useGetProductionHistory } from "./useGetProductionHistory";
 export { default as useUpdateProduction } from "./useUpdateProduction";
 export { default as useGetAvailableProducts } from "./useGetAvailableProducts";
+export { default as useGetProductionDetail } from "./useGetProductionDetail";

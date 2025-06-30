@@ -88,3 +88,10 @@ export interface ProductionHistoryResponseDto {
   status: string;
   products: ProductDetail[];
 }
+export interface ProductDetail {
+  productName: string;
+  quantity: number;           // solicitada o producida (según la API)
+  requestedQuantity?: number; // (opcional, si lo tienes)
+  producedQuantity?: number;  // (opcional, si lo tienes)
+  comments?: string;          // Motivo si está incompleto
+}

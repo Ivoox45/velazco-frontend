@@ -26,10 +26,10 @@ export interface Product {
 export interface ProductionDetail {
   product: { id: number; name: string };
   requestedQuantity: number;
-  producedQuantity: number; // cantidad realmente producida (0 o null si aún no termina)
-  status: ProductionStatus; // estado por producto (puede ser útil para finalización)
-  comments?: string; // comentario final de producción, si quedó incompleto
-  responsible?: { id: number; name: string }; // responsable (opcional)
+  producedQuantity: number | null; // puede venir 0 o null si aún no termina
+  status?: ProductionStatus; // opcional, si el backend lo envía por producto
+  comments?: string; // opcional, comentario final si quedó incompleto
+  responsible?: { id: number; name: string }; // opcional, si se usa responsable por producto
 }
 
 // --- Orden de producción base ---
@@ -50,6 +50,7 @@ export interface ProductionCreateResponseDto {
   status: ProductionStatus;
   assignedBy: { id: number; name: string };
   assignedTo: { id: number; name: string };
+  comments?: string;
   details: ProductionDetail[];
 }
 
@@ -92,10 +93,9 @@ export interface ProductionHistoryResponseDto {
 export type EstadoProduccion = "PENDIENTE" | "PRODUCCION";
 
 // --- Tablas/Dialogs ---
-// Para la tabla principal
 export interface ProductOrder {
   producto: string;
-  subtitulo?: string; // opcional, para evitar errores de undefined
+  subtitulo?: string;
   cantidad: string;
 }
 
@@ -118,3 +118,12 @@ export type ProductoForm = {
   cantidadProducida: number;
   motivo: string;
 };
+export interface FinalizeProductDto {
+  productId: number;
+  producedQuantity: number;
+  motivoIncompleto?: string; 
+}
+
+export interface FinalizeProductionRequestDto {
+  productos: FinalizeProductDto[];
+}

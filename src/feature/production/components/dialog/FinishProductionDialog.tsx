@@ -19,6 +19,7 @@ type FinishProductionDialogProps = {
   onCancel: () => void;
   products: ProductForFinish[];
   instrucciones?: string;
+  loading?: boolean;
 };
 
 export default function FinishProductionDialog({
@@ -27,7 +28,8 @@ export default function FinishProductionDialog({
   onFinish,
   onCancel,
   products,
-  instrucciones = "Pedido urgente para evento corporativo. Las tortas deben tener decoración especial y las galletas empacadas en cajas de 10 unidades.",
+  instrucciones = "",
+  loading = false,
 }: FinishProductionDialogProps) {
   const [resultados, setResultados] = useState<ProductoForm[]>(
     products.map((p) => ({
@@ -58,7 +60,7 @@ export default function FinishProductionDialog({
     );
   });
 
-  // Métricas rápidas
+  // Resumen
   const completados = resultados.filter(
     (r) => r.estado === "COMPLETADO"
   ).length;
@@ -92,7 +94,6 @@ export default function FinishProductionDialog({
         {/* Productos */}
         <div className="space-y-6">
           {products.map((p, idx) => {
-            // Aseguramos que form siempre tenga valor para evitar errores
             const form = resultados[idx] || {
               estado: "COMPLETADO",
               cantidadProducida: p.cantidad,
@@ -255,15 +256,18 @@ export default function FinishProductionDialog({
         </div>
         {/* Footer */}
         <DialogFooter className="mt-6 flex flex-row gap-2 justify-end">
-          <Button variant="outline" onClick={onCancel}>
+          <Button variant="outline" onClick={onCancel} disabled={loading}>
             Cancelar
           </Button>
           <Button
             className="bg-green-600 hover:bg-green-700 text-white font-semibold"
-            disabled={!esValido}
-            onClick={() => onFinish(resultados)}
+            disabled={!esValido || loading}
+            onClick={() => {
+              console.log("DEBUG: Finishing resultados", resultados); // <-- LOG para depurar
+              onFinish(resultados);
+            }}
           >
-            Finalizar Orden
+            {loading ? "Finalizando..." : "Finalizar Orden"}
           </Button>
         </DialogFooter>
       </DialogContent>
