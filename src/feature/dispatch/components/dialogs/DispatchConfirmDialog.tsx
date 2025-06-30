@@ -19,6 +19,7 @@ import { es } from "date-fns/locale";
 import { toast } from "sonner";
 import { useConfirmDispatch } from "../../hooks";
 import type { DeliveredOrder } from "../../types";
+import type { UseMutationResult } from "@tanstack/react-query";
 
 interface DispatchConfirmDialogProps {
   open: boolean;
@@ -31,7 +32,8 @@ export default function DispatchConfirmDialog({
   onClose,
   order,
 }: DispatchConfirmDialogProps) {
-  const { mutate, isLoading } = useConfirmDispatch();
+  const { mutate, isLoading } = useConfirmDispatch() as UseMutationResult<void, Error, number, unknown>;
+
 
   if (!order) return null;
 

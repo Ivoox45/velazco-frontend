@@ -7,48 +7,48 @@ import { toast } from "sonner";
 import useUpdateCategory from "@/feature/inventory/hooks/useUpdateCategory";
 
 export default function CategoryEditForm({
-    id,
-    initialName,
-    onClose,
+  id,
+  initialName,
+  onClose,
 }: {
-    id: number;
-    initialName: string;
-    onClose: () => void;
+  id: number;
+  initialName: string;
+  onClose: () => void;
 }) {
-    const [name, setName] = useState(initialName);
-    const { mutate, isPending } = useUpdateCategory();
+  const [name, setName] = useState(initialName);
+  const { mutate, isPending } = useUpdateCategory();
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        mutate(
-            { id, data: { name } },
-            {
-                onSuccess: () => {
-                    toast.success("Categoría actualizada");
-                    onClose();
-                },
-                onError: () => {
-                    toast.error("Error al actualizar categoría");
-                },
-            }
-        );
-    };
-
-    return (
-        <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-                <Label className="block mb-2">Nombre</Label>
-                <Input
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    required
-                />
-            </div>
-            <DialogFooter>
-                <Button type="submit" disabled={isPending}>
-                    Guardar cambios
-                </Button>
-            </DialogFooter>
-        </form>
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    mutate(
+      { id, data: { name } },
+      {
+        onSuccess: () => {
+          toast.success("Categoría actualizada");
+          onClose();
+        },
+        onError: () => {
+          toast.error("Error al actualizar categoría");
+        },
+      }
     );
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <Label className="block mb-2">Nombre</Label>
+        <Input
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          required
+        />
+      </div>
+      <DialogFooter>
+        <Button type="submit" disabled={isPending}>
+          Guardar cambios
+        </Button>
+      </DialogFooter>
+    </form>
+  );
 }

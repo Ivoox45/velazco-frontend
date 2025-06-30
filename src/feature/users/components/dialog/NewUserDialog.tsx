@@ -1,19 +1,31 @@
 // users/components/dialog/NewUserDialog.tsx
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle,
-  DialogDescription, DialogFooter, DialogClose
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  Select, SelectTrigger, SelectValue,
-  SelectContent, SelectItem
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
 } from "@/components/ui/select";
 import { useState } from "react";
 import type { RolUsuario } from "../../types";
 
 const roles: RolUsuario[] = [
-  "Administrador", "Vendedor", "Cajero", "Producción", "Entregas"
+  "Administrador",
+  "Vendedor",
+  "Cajero",
+  "Producción",
+  "Entregas",
 ];
 
 export default function NewUserDialog({
@@ -23,15 +35,18 @@ export default function NewUserDialog({
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onCreate?: (user: { nombre: string; correo: string; rol: RolUsuario }) => void;
+  onCreate?: (user: {
+    nombre: string;
+    correo: string;
+    rol: RolUsuario;
+  }) => void;
 }) {
   const [nombre, setNombre] = useState("");
   const [correo, setCorreo] = useState("");
   const [rol, setRol] = useState<RolUsuario | "">("");
 
   const handleCreate = () => {
-    if (onCreate && rol)
-      onCreate({ nombre, correo, rol });
+    if (onCreate && rol) onCreate({ nombre, correo, rol });
     onOpenChange(false);
     setNombre("");
     setCorreo("");
@@ -60,7 +75,9 @@ export default function NewUserDialog({
           </div>
           {/* Correo */}
           <div>
-            <label className="font-semibold block mb-1">Correo Electrónico</label>
+            <label className="font-semibold block mb-1">
+              Correo Electrónico
+            </label>
             <Input
               type="email"
               placeholder="Ej: juan@velazcopasteleria.com"
@@ -71,7 +88,7 @@ export default function NewUserDialog({
           {/* Rol */}
           <div>
             <label className="font-semibold block mb-1">Rol</label>
-            <Select value={rol} onValueChange={v => setRol(v as RolUsuario)}>
+            <Select value={rol} onValueChange={(v) => setRol(v as RolUsuario)}>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Seleccionar rol" />
               </SelectTrigger>

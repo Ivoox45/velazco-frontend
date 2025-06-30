@@ -1,1 +1,1 @@
-export {default as DispatchTabs} from './DispatchTabs';
+export { default as DispatchTabs } from "./DispatchTabs";

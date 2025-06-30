@@ -1,6 +1,10 @@
-// users/components/table/UserTable.tsx
 import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -17,12 +21,18 @@ function getInitials(name: string) {
 
 function getRoleVariant(rol: string) {
   switch (rol) {
-    case "Administrador": return "admin";
-    case "Vendedor": return "vendedor";
-    case "Cajero": return "cajero";
-    case "Producción": return "produccion";
-    case "Entregas": return "entregas";
-    default: return "default";
+    case "Administrador":
+      return "admin";
+    case "Vendedor":
+      return "vendedor";
+    case "Cajero":
+      return "cajero";
+    case "Producción":
+      return "produccion";
+    case "Entregas":
+      return "entregas";
+    default:
+      return "default";
   }
 }
 function getEstadoVariant(estado: string) {
@@ -87,7 +97,9 @@ export default function UserTable() {
                 <div className="flex items-center gap-3">
                   <Avatar>
                     <AvatarFallback
-                      className={avatarVariants({ variant: getRoleVariant(u.rol) })}
+                      className={avatarVariants({
+                        variant: getRoleVariant(u.rol),
+                      })}
                     >
                       {getInitials(u.name)}
                     </AvatarFallback>

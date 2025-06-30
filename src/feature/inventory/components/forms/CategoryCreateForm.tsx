@@ -9,47 +9,47 @@ import { toast } from "sonner";
 import useCreateCategory from "@/feature/inventory/hooks/useCreateCategory";
 
 export default function CategoryCreateForm({
-    onClose,
+  onClose,
 }: {
-    onClose: () => void;
+  onClose: () => void;
 }) {
-    const [name, setName] = useState("");
-    const { mutate, isPending } = useCreateCategory();
+  const [name, setName] = useState("");
+  const { mutate, isPending } = useCreateCategory();
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!name.trim()) return;
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim()) return;
 
-        mutate(
-            { name },
-            {
-                onSuccess: () => {
-                    toast.success("Categoría creada");
-                    setName("");
-                    onClose();
-                },
-                onError: () => {
-                    toast.error("Error al crear categoría");
-                },
-            }
-        );
-    };
-
-    return (
-        <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-                <Label className="block mb-2">Nombre</Label>
-                <Input
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    required
-                />
-            </div>
-            <DialogFooter>
-                <Button type="submit" disabled={isPending}>
-                    Crear
-                </Button>
-            </DialogFooter>
-        </form>
+    mutate(
+      { name },
+      {
+        onSuccess: () => {
+          toast.success("Categoría creada");
+          setName("");
+          onClose();
+        },
+        onError: () => {
+          toast.error("Error al crear categoría");
+        },
+      }
     );
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        <Label className="block mb-2">Nombre</Label>
+        <Input
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          required
+        />
+      </div>
+      <DialogFooter>
+        <Button type="submit" disabled={isPending}>
+          Crear
+        </Button>
+      </DialogFooter>
+    </form>
+  );
 }

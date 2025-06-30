@@ -3,19 +3,14 @@ import { updateProductActive } from "../api/products";
 import type { UpdateProductActive } from "../types";
 
 export default function useUpdateProductActive() {
-    const queryClient = useQueryClient();
+  const queryClient = useQueryClient();
 
-    return useMutation({
-        mutationFn: ({
-            id,
-            active,
-        }: {
-            id: number;
-            active: UpdateProductActive;
-        }) => updateProductActive(id, active),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ["products"] });
-            queryClient.invalidateQueries({ queryKey: ["productsAvailable"] });
-        },
-    });
+  return useMutation({
+    mutationFn: ({ id, active }: { id: number; active: UpdateProductActive }) =>
+      updateProductActive(id, active),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({ queryKey: ["productsAvailable"] });
+    },
+  });
 }

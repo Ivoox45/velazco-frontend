@@ -8,13 +8,11 @@ import type {
   Product,
 } from "../types";
 
-// 1. Obtener TODAS las órdenes de producción (GET /api/productions)
 export async function getProductions(): Promise<ProductionCreateResponseDto[]> {
   const res = await axios.get("/productions");
   return res.data;
 }
 
-// 2. Crear una nueva orden de producción (POST /api/productions)
 export async function createProduction(
   data: ProductionCreateRequestDto
 ): Promise<ProductionCreateResponseDto> {
@@ -22,7 +20,6 @@ export async function createProduction(
   return res.data;
 }
 
-// 3. Actualizar una orden de producción (PUT /api/productions/{id})
 export async function updateProduction(
   id: number,
   data: ProductionUpdateRequestDto
@@ -31,12 +28,10 @@ export async function updateProduction(
   return res.data;
 }
 
-// 4. Eliminar una orden de producción (DELETE /api/productions/{id})
 export async function deleteProduction(id: number): Promise<void> {
   await axios.delete(`/productions/${id}`);
 }
 
-// 6. Obtener historial de órdenes (GET /api/productions/historial)
 export async function getProductionHistory(): Promise<
   ProductionHistoryResponseDto[]
 > {

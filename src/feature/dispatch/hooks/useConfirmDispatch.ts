@@ -4,7 +4,7 @@ import { confirmDispatch } from "../api/dispatch";
 export default function useConfirmDispatch() {
   const queryClient = useQueryClient();
 
-  return useMutation({
+  return useMutation<void, Error, number>({
     mutationFn: (id: number) => confirmDispatch(id),
     onSuccess: () => {
       queryClient.invalidateQueries({

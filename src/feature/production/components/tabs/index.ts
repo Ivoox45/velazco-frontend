@@ -1,1 +1,1 @@
-export {default as ProductionTabs} from './ProductionTabs';
+export { default as ProductionTabs } from "./ProductionTabs";

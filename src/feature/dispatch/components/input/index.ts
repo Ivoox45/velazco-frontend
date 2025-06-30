@@ -1,1 +1,1 @@
-export {default as DispatchSearchInput} from './DispatchSearchInput';
+export { default as DispatchSearchInput } from "./DispatchSearchInput";

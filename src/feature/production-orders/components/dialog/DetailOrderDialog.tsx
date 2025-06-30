@@ -23,7 +23,6 @@ export default function DetailOrderDialog({
 }: DetailOrderDialogProps) {
   if (!order) return null;
 
-  // Detecta si es ProductionCreateResponseDto
   const isCreateResponse = (obj: any): obj is ProductionCreateResponseDto => {
     return (
       "id" in obj &&
@@ -35,7 +34,6 @@ export default function DetailOrderDialog({
     );
   };
 
-  // Detecta si es ProductionHistoryResponseDto
   const isHistoryResponse = (obj: any): obj is ProductionHistoryResponseDto => {
     return (
       "orderNumber" in obj &&

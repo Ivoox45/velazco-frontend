@@ -1,4 +1,3 @@
-// src/production/components/table/ProductionTable.tsx
 import {
   Table,
   TableBody,

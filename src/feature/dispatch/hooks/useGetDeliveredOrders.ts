@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { getDeliveredOrders } from "../api/dispatch";  
+import { getDeliveredOrders } from "../api/dispatch";
 import type { PaginatedDeliveredOrders } from "../types";
 
 export default function useGetDeliveredOrders(

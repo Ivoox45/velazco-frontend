@@ -242,7 +242,9 @@ export default function NewOrderDialog({
                     <SelectTrigger className="w-full">
                       <SelectValue
                         placeholder={
-                          loadingProducts ? "Cargando..." : "Seleccionar producto"
+                          loadingProducts
+                            ? "Cargando..."
+                            : "Seleccionar producto"
                         }
                       />
                     </SelectTrigger>
