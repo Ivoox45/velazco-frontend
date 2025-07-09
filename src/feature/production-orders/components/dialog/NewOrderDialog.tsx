@@ -113,10 +113,10 @@ export default function NewOrderDialog({
       productionDate: format(fecha, "yyyy-MM-dd"),
       assignedToId: Number(responsable),
       status: "PENDIENTE",
+      comments: notas,
       details: products.map((p) => ({
         productId: Number(p.productId),
         requestedQuantity: Number(p.quantity),
-        comments: notas,
       })),
     };
 

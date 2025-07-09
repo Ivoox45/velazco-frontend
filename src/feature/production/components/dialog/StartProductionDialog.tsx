@@ -1,4 +1,3 @@
-// src/production/components/dialog/StartProductionDialog.tsx
 import {
   Dialog,
   DialogContent,
@@ -16,6 +15,7 @@ type StartProductionDialogProps = {
   onStart: () => void;
   onCancel: () => void;
   products?: StartProduct[];
+  loading?: boolean;
 };
 
 export default function StartProductionDialog({
@@ -24,6 +24,7 @@ export default function StartProductionDialog({
   onStart,
   onCancel,
   products = [],
+  loading = false,
 }: StartProductionDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -36,7 +37,6 @@ export default function StartProductionDialog({
             Confirmar inicio de producción para todos los productos
           </DialogDescription>
         </DialogHeader>
-        {/* Lista de productos */}
         <div className="bg-blue-50 rounded-md px-4 py-3 mb-4 border border-blue-100">
           <div className="mb-2 font-medium text-[15px] text-blue-900">
             Al iniciar la producción, todos los productos pasarán al estado{" "}
@@ -68,16 +68,16 @@ export default function StartProductionDialog({
             cuáles no.
           </span>
         </div>
-        {/* Botones */}
         <DialogFooter className="mt-2 flex flex-row gap-2 justify-end">
-          <Button variant="outline" onClick={onCancel}>
+          <Button variant="outline" onClick={onCancel} disabled={loading}>
             Cancelar
           </Button>
           <Button
             className="bg-blue-600 hover:bg-blue-700 text-white font-semibold"
             onClick={onStart}
+            disabled={loading}
           >
-            Iniciar Producción
+            {loading ? "Iniciando..." : "Iniciar Producción"}
           </Button>
         </DialogFooter>
       </DialogContent>

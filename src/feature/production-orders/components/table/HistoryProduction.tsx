@@ -10,7 +10,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { DetailOrderDialog } from "../dialog";
+import { DetailHistoryDialog } from "../dialog";
 import { useState } from "react";
 import type { ProductionHistoryResponseDto } from "../../types";
 
@@ -43,7 +43,6 @@ export default function HistoryProduction() {
           <TableRow>
             <TableHead>N° Orden</TableHead>
             <TableHead>Fecha Creación</TableHead>
-            <TableHead>Fecha Requerida</TableHead>
             <TableHead>Productos</TableHead>
             <TableHead>Responsable</TableHead>
             <TableHead>Estado</TableHead>
@@ -55,23 +54,29 @@ export default function HistoryProduction() {
             <TableRow key={row.orderNumber}>
               <TableCell>{row.orderNumber}</TableCell>
               <TableCell>{row.date}</TableCell>
-              <TableCell>{row.date}</TableCell>
               <TableCell>
                 {row.products.map((p, i) => (
                   <span key={p.productName}>
-                    {p.productName} ({p.quantity})
+                    {p.productName} ({p.requestedQuantity})
                     {i < row.products.length - 1 && ", "}
                   </span>
                 ))}
               </TableCell>
               <TableCell>{row.responsible}</TableCell>
               <TableCell>
-                <Badge
-                  variant="estado_activo"
-                  className="rounded-full bg-green-100 text-green-700 px-4 py-1 font-medium"
-                >
-                  {row.status}
-                </Badge>
+                {row.status === "COMPLETO" ? (
+                  <Badge className="rounded-full bg-green-100 text-green-700 px-4 py-1 font-medium">
+                    {row.status}
+                  </Badge>
+                ) : row.status === "INCOMPLETO" ? (
+                  <Badge className="rounded-full bg-orange-100 text-orange-700 px-4 py-1 font-medium">
+                    {row.status}
+                  </Badge>
+                ) : (
+                  <Badge className="rounded-full bg-gray-100 text-gray-700 px-4 py-1 font-medium">
+                    {row.status}
+                  </Badge>
+                )}
               </TableCell>
               <TableCell>
                 <Button
@@ -86,10 +91,9 @@ export default function HistoryProduction() {
           ))}
         </TableBody>
       </Table>
-
       {/* Paginación */}
       <div className="flex flex-col md:flex-row items-center justify-between gap-2 mt-3 px-2">
-        <span className="text-sm text-gray-600">
+        <span className="text-sm text-gray-600 dark:text-white">
           Página {page} de {totalPages}
         </span>
         <div className="flex gap-2">
@@ -115,8 +119,12 @@ export default function HistoryProduction() {
           </Button>
         </div>
       </div>
-
-      <DetailOrderDialog order={selectedOrder} open={open} onClose={setOpen} />
+      <DetailHistoryDialog
+        order={selectedOrder}
+        open={open}
+        onClose={setOpen}
+      />{" "}
+      {/* 👈 Corrección aquí */}
     </div>
   );
 }

@@ -17,11 +17,11 @@ export default function ProductionTable({ orders }: ProductionTableProps) {
     <div className="overflow-x-auto px-0">
       <Table>
         <TableHeader>
-          <TableRow className="bg-gray-50">
-            <TableHead className="min-w-[200px] text-gray-700 font-semibold py-4 text-base">
+          <TableRow className="">
+            <TableHead className="min-w-[200px] font-semibold py-4 text-base">
               Producto
             </TableHead>
-            <TableHead className="text-gray-700 font-semibold py-4 text-base">
+            <TableHead className=" font-semibold py-4 text-base">
               Cantidad
             </TableHead>
           </TableRow>
@@ -29,7 +29,7 @@ export default function ProductionTable({ orders }: ProductionTableProps) {
         <TableBody>
           {orders.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={2} className="text-center py-8 text-gray-400">
+              <TableCell colSpan={2} className="text-center py-8 ">
                 No hay productos para mostrar.
               </TableCell>
             </TableRow>
@@ -37,14 +37,14 @@ export default function ProductionTable({ orders }: ProductionTableProps) {
             orders.map((order, idx) => (
               <TableRow
                 key={idx}
-                className="border-b last:border-0 hover:bg-gray-50 transition"
+                className="border-b last:border-0"
               >
                 <TableCell className="py-5">
                   <div className="font-semibold text-[17px] leading-tight mb-0.5">
                     {order.producto}
                   </div>
                   {order.subtitulo && (
-                    <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-tight">
+                    <div className="text-xs mt-1 leading-tight">
                       {order.subtitulo}
                     </div>
                   )}

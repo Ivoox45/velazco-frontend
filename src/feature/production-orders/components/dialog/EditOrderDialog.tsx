@@ -48,7 +48,7 @@ export default function EditOrderDialog({
   const [fecha, setFecha] = React.useState<Date | undefined>(undefined);
   const [responsable, setResponsable] = React.useState("");
   const [productos, setProductos] = React.useState<
-    { productId: number | ""; quantity: number | ""; comments?: string }[]
+    { productId: number | ""; quantity: number | "" }[]
   >([{ productId: "", quantity: "" }]);
   const [notas, setNotas] = React.useState("");
   const [error, setError] = React.useState<string | null>(null);
@@ -69,7 +69,7 @@ export default function EditOrderDialog({
           quantity: d.requestedQuantity,
         }))
       );
-      setNotas(order.details[0]?.comments || "");
+      setNotas(order.comments || "");
     }
   }, [order]);
 
@@ -93,7 +93,7 @@ export default function EditOrderDialog({
   };
 
   const handleAddProducto = () => {
-    if (productos.length >= 4) return; // Limitar máximo 4 productos
+    if (productos.length >= 4) return;
     setProductos([...productos, { productId: "", quantity: "" }]);
   };
 
@@ -107,7 +107,6 @@ export default function EditOrderDialog({
     .map((p) => p.productId)
     .filter((id): id is number => typeof id === "number");
 
-  // Productos disponibles que no están seleccionados aún
   const availableProducts = (products || []).filter(
     (p) => !selectedProductIds.includes(p.id)
   );
@@ -141,10 +140,10 @@ export default function EditOrderDialog({
           productionDate: format(fecha, "yyyy-MM-dd"),
           assignedToId: Number(responsable),
           status: order.status,
+          comments: notas, 
           details: productos.map((p) => ({
             productId: Number(p.productId),
             requestedQuantity: Number(p.quantity),
-            comments: notas,
           })),
         },
       },

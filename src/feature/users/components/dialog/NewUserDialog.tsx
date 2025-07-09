@@ -1,4 +1,3 @@
-// users/components/dialog/NewUserDialog.tsx
 import {
   Dialog,
   DialogContent,
@@ -19,38 +18,68 @@ import {
 } from "@/components/ui/select";
 import { useState } from "react";
 import type { RolUsuario } from "../../types";
+import { useGetAllRoles } from "../../hooks/useGetAllRoles";
+import { useCreateUser } from "../../hooks/useCreateUser";
+import { toast } from "sonner";
 
-const roles: RolUsuario[] = [
-  "Administrador",
-  "Vendedor",
-  "Cajero",
-  "Producción",
-  "Entregas",
-];
+const ROLE_TRANSLATIONS: Record<string, RolUsuario> = {
+  ADMIN: "Administrador",
+  SELLER: "Vendedor",
+  CASHIER: "Cajero",
+  PRODUCTION: "Producción",
+  DELIVERY: "Entregas",
+};
 
 export default function NewUserDialog({
   open,
   onOpenChange,
-  onCreate,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onCreate?: (user: {
-    nombre: string;
-    correo: string;
-    rol: RolUsuario;
-  }) => void;
 }) {
   const [nombre, setNombre] = useState("");
   const [correo, setCorreo] = useState("");
   const [rol, setRol] = useState<RolUsuario | "">("");
+  const [password, setPassword] = useState("");
+  const [active, setActive] = useState(true);
+
+  const { data: rolesData, isLoading: rolesLoading } = useGetAllRoles();
+  const createUserMutation = useCreateUser();
+
+  const findRoleId = (rolEsp: RolUsuario) => {
+    if (!rolesData) return undefined;
+    const entry = rolesData.find((r) => ROLE_TRANSLATIONS[r.name] === rolEsp);
+    return entry ? entry.id : undefined;
+  };
 
   const handleCreate = () => {
-    if (onCreate && rol) onCreate({ nombre, correo, rol });
-    onOpenChange(false);
-    setNombre("");
-    setCorreo("");
-    setRol("");
+    if (!rol) return;
+    const roleId = findRoleId(rol);
+    if (roleId) {
+      createUserMutation.mutate(
+        {
+          name: nombre,
+          email: correo,
+          password,
+          active,
+          roleId,
+        },
+        {
+          onSuccess: () => {
+            onOpenChange(false);
+            setNombre("");
+            setCorreo("");
+            setRol("");
+            setPassword("");
+            setActive(true);
+            toast.success("Usuario creado correctamente 🎉");
+          },
+          onError: (error) => {
+            toast.error("Hubo un error al crear el usuario");
+          },
+        }
+      );
+    }
   };
 
   return (
@@ -85,21 +114,56 @@ export default function NewUserDialog({
               onChange={(e) => setCorreo(e.target.value)}
             />
           </div>
+          {/* Contraseña */}
+          <div>
+            <label className="font-semibold block mb-1">Contraseña</label>
+            <Input
+              type="password"
+              placeholder="Contraseña"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </div>
           {/* Rol */}
           <div>
             <label className="font-semibold block mb-1">Rol</label>
-            <Select value={rol} onValueChange={(v) => setRol(v as RolUsuario)}>
+            <Select
+              value={rol}
+              onValueChange={(v) => setRol(v as RolUsuario)}
+              disabled={rolesLoading}
+            >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Seleccionar rol" />
               </SelectTrigger>
               <SelectContent className="w-full">
-                {roles.map((r) => (
-                  <SelectItem key={r} value={r}>
-                    {r}
-                  </SelectItem>
-                ))}
+                {rolesData &&
+                  rolesData
+                    .map((r) => ({
+                      backend: r.name,
+                      frontend: ROLE_TRANSLATIONS[r.name] as RolUsuario,
+                      id: r.id,
+                    }))
+                    .filter((r) => !!r.frontend)
+                    .map((r) => (
+                      <SelectItem key={r.id} value={r.frontend}>
+                        {r.frontend}
+                      </SelectItem>
+                    ))}
               </SelectContent>
             </Select>
+          </div>
+          {/* Estado activo */}
+          <div className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              id="active"
+              checked={active}
+              onChange={(e) => setActive(e.target.checked)}
+              className="w-4 h-4"
+            />
+            <label htmlFor="active" className="font-medium">
+              Usuario activo
+            </label>
           </div>
         </div>
 
@@ -110,7 +174,16 @@ export default function NewUserDialog({
           <Button
             className="bg-black text-white hover:bg-zinc-800"
             onClick={handleCreate}
-            disabled={!nombre || !correo || !rol}
+            disabled={
+              !nombre ||
+              !correo ||
+              !rol ||
+              !password ||
+              !findRoleId(rol) ||
+              rolesLoading ||
+              createUserMutation.isLoading
+            }
+            loading={createUserMutation.isLoading}
           >
             Crear Usuario
           </Button>

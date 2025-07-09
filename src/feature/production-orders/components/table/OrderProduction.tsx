@@ -82,8 +82,7 @@ export default function OrderProduction() {
         <TableHeader>
           <TableRow>
             <TableHead>N° Orden</TableHead>
-            <TableHead>Fecha Creación</TableHead>
-            <TableHead>Fecha</TableHead>
+            <TableHead>Fecha de Produccion</TableHead>
             <TableHead>Productos</TableHead>
             <TableHead className="text-center">Acciones</TableHead>
           </TableRow>
@@ -92,7 +91,6 @@ export default function OrderProduction() {
           {(orders || []).map((order) => (
             <TableRow key={order.id}>
               <TableCell>OP-{order.id.toString().padStart(6, "0")}</TableCell>
-              <TableCell>{order.productionDate}</TableCell>
               <TableCell>{order.productionDate}</TableCell>
               <TableCell>
                 {order.details.map((p, idx) => (
@@ -148,7 +146,7 @@ export default function OrderProduction() {
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent className="max-w-[400px]">
           <DialogHeader>
-            <DialogTitle>Cancelar Orden de Produccion</DialogTitle>
+            <DialogTitle>Cancelar Orden de Producción</DialogTitle>
           </DialogHeader>
           <div className="text-base">
             ¿Estás seguro de que deseas cancelar este pedido? Esta acción no se
@@ -166,8 +164,6 @@ export default function OrderProduction() {
               type="button"
               variant="destructive"
               onClick={eliminarOrden}
-              // CORREGIDO: quitar prop 'loading' que no existe en el Button personalizado
-              // loading={deleteMutation.isPending}  <-- elimina esta línea
             >
               Sí, cancelar
             </Button>
