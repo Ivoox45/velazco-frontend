@@ -9,10 +9,10 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { avatarVariants } from "@/components/ui/avatar";
-import { useGetAllUsers } from "../../hooks/useGetAllUsers"; // Importa el hook
+import { useGetAllUsers } from "../../hooks/useGetAllUsers";
 
 // Traducción inglés -> español
-const ROLE_TRANSLATIONS: Record<string, string> = {
+const ROLE_TRANSLATIONS = {
   ADMIN: "Administrador",
   SELLER: "Vendedor",
   CASHIER: "Cajero",
@@ -20,7 +20,7 @@ const ROLE_TRANSLATIONS: Record<string, string> = {
   DELIVERY: "Entregas",
 };
 
-function getInitials(name: string) {
+function getInitials(name) {
   return name
     .split(" ")
     .map((n) => n[0]?.toUpperCase())
@@ -28,7 +28,7 @@ function getInitials(name: string) {
     .substring(0, 2);
 }
 
-function getRoleVariant(rol: string) {
+function getRoleVariant(rol) {
   switch (rol) {
     case "Administrador":
       return "admin";
@@ -44,26 +44,43 @@ function getRoleVariant(rol: string) {
       return "default";
   }
 }
-function getEstadoVariant(estado: string) {
+
+function getEstadoVariant(estado) {
   if (estado === "Activo") return "estado_activo";
   return "default";
 }
 
 export default function UserTable() {
-  // Usa el hook para cargar usuarios
   const { data: usersData, isLoading } = useGetAllUsers();
 
   // Mapea usuarios del backend al formato de la tabla
   const users =
     usersData && Array.isArray(usersData)
-      ? usersData.map((u: any) => ({
+      ? usersData.map((u) => ({
           name: u.name,
           email: u.email,
-          rol: ROLE_TRANSLATIONS[u.role] || u.role, // Traduce a español
+          rol: ROLE_TRANSLATIONS[u.role] || u.role,
           estado: u.active ? "Activo" : "Inactivo",
-          desc: "", // Aquí podrías poner algún campo de descripción si lo tienes
+          desc: "",
         }))
       : [];
+
+  // Orden personalizado de roles
+  const ROLE_ORDER = [
+    "Administrador",
+    "Vendedor",
+    "Cajero",
+    "Producción",
+    "Entregas",
+  ];
+
+  // Ordena los usuarios según el rol personalizado
+  users.sort((a, b) => {
+    const indexA = ROLE_ORDER.indexOf(a.rol);
+    const indexB = ROLE_ORDER.indexOf(b.rol);
+    // Si no encuentra el rol, lo pone al final
+    return (indexA === -1 ? 999 : indexA) - (indexB === -1 ? 999 : indexB);
+  });
 
   return (
     <div className="overflow-x-auto">
