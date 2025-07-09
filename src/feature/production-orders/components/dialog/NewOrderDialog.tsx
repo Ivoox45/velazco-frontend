@@ -109,11 +109,11 @@ export default function NewOrderDialog({
     )
       return setError("Debes seleccionar productos y cantidades válidas.");
 
-    // -- ACA el comments va al nivel de la orden principal (no en cada detalle) --
     const payload: ProductionCreateRequestDto = {
       productionDate: format(fecha, "yyyy-MM-dd"),
       assignedToId: Number(responsable),
       status: "PENDIENTE",
+      comments: notas,
       details: products.map((p) => ({
         productId: Number(p.productId),
         requestedQuantity: Number(p.quantity),

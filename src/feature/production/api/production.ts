@@ -25,6 +25,6 @@ export async function finalizeProduction(
   id: number,
   body: FinalizeProductionRequestDto
 ) {
-  const res = await axios.patch(`/productions/${id}/finalizar`, body);
+  const res = await axios.patch(`/productions/${id}/finalize`, body);
   return res.data;
 }

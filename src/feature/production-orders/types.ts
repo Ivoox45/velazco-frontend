@@ -47,6 +47,7 @@ export interface ProductionCreateRequestDto {
   productionDate: string;
   assignedToId: number;
   status: ProductionStatus;
+  comments?: string;
   details: ProductionDetailCreateRequestDto[];
 }
 

@@ -193,12 +193,12 @@ export default function ProduccionPage() {
 
       {/* Encabezado de la orden */}
       <div className="flex flex-col gap-1">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 md:gap-4 text-gray-500 w-full">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 md:gap-4  w-full">
           <div className="w-full min-w-0">
             <div className="flex flex-wrap items-center gap-x-2 gap-y-2 text-[16px]">
               <span>
                 Orden del día:{" "}
-                <span className="font-semibold text-gray-600">
+                <span className="font-semibold ">
                   {orderNumber} - {fechaOrden}
                 </span>
               </span>
@@ -210,7 +210,7 @@ export default function ProduccionPage() {
                 {badgeByStatus[productionStatus!]?.label}
               </Badge>
             </div>
-            <div className="flex items-center gap-1 mt-2 text-[15px] text-gray-500 flex-wrap">
+            <div className="flex items-center gap-1 mt-2 text-[15px] flex-wrap">
               <UserIcon className="w-4 h-4 opacity-60 flex-shrink-0" />
               <span className="font-bold">Responsable:</span>
               <span className="break-words">{responsable}</span>
@@ -257,7 +257,13 @@ export default function ProduccionPage() {
             </CardTitle>
             {/* Instrucciones siempre visibles */}
             {firstOrder && (
-              <div className="bg-blue-50 text-blue-900 text-[15px] rounded-md px-4 py-2 font-normal">
+              <div
+                className="
+      bg-blue-50 text-blue-900 rounded-md px-4 py-2 font-normal text-[15px]
+      dark:bg-blue-950 dark:text-blue-100
+      border border-blue-100 dark:border-blue-900
+    "
+              >
                 <span className="font-semibold">
                   Instrucciones de la orden:
                 </span>

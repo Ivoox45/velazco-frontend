@@ -10,7 +10,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { DetailHistoryDialog } from "../dialog"; // 👈 Corrección aquí
+import { DetailHistoryDialog } from "../dialog";
 import { useState } from "react";
 import type { ProductionHistoryResponseDto } from "../../types";
 
@@ -57,7 +57,7 @@ export default function HistoryProduction() {
               <TableCell>
                 {row.products.map((p, i) => (
                   <span key={p.productName}>
-                    {p.productName} ({p.quantity})
+                    {p.productName} ({p.requestedQuantity})
                     {i < row.products.length - 1 && ", "}
                   </span>
                 ))}
@@ -93,7 +93,7 @@ export default function HistoryProduction() {
       </Table>
       {/* Paginación */}
       <div className="flex flex-col md:flex-row items-center justify-between gap-2 mt-3 px-2">
-        <span className="text-sm text-gray-600">
+        <span className="text-sm text-gray-600 dark:text-white">
           Página {page} de {totalPages}
         </span>
         <div className="flex gap-2">

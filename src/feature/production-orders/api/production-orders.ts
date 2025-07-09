@@ -35,7 +35,7 @@ export async function deleteProduction(id: number): Promise<void> {
 export async function getProductionHistory(): Promise<
   ProductionHistoryResponseDto[]
 > {
-  const res = await axios.get("/productions/historial");
+  const res = await axios.get("/productions/history");
   return res.data;
 }
 
