@@ -19,14 +19,16 @@ import {
 } from "@/components/ui/select";
 import { useState } from "react";
 import type { RolUsuario } from "../../types";
+import { useGetAllRoles } from "../../hooks/useGetAllRoles";
 
-const roles: RolUsuario[] = [
-  "Administrador",
-  "Vendedor",
-  "Cajero",
-  "Producción",
-  "Entregas",
-];
+// Diccionario: backend (en inglés) => frontend (en español)
+const ROLE_TRANSLATIONS: Record<string, RolUsuario> = {
+  ADMIN: "Administrador",
+  SELLER: "Vendedor",
+  CASHIER: "Cajero",
+  PRODUCTION: "Producción",
+  DELIVERY: "Entregas",
+};
 
 export default function NewUserDialog({
   open,
@@ -35,18 +37,39 @@ export default function NewUserDialog({
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  // Ahora también devuelve el roleId, necesario para crear usuario
   onCreate?: (user: {
     nombre: string;
     correo: string;
     rol: RolUsuario;
+    roleId: number;
   }) => void;
 }) {
   const [nombre, setNombre] = useState("");
   const [correo, setCorreo] = useState("");
   const [rol, setRol] = useState<RolUsuario | "">("");
 
+  // Carga dinámica de roles desde el backend
+  const { data: rolesData, isLoading: rolesLoading } = useGetAllRoles();
+
+  // Encuentra el id del rol según el nombre en español
+  const findRoleId = (rolEsp: RolUsuario) => {
+    if (!rolesData) return undefined;
+    const entry = rolesData.find((r) => ROLE_TRANSLATIONS[r.name] === rolEsp);
+    return entry ? entry.id : undefined;
+  };
+
   const handleCreate = () => {
-    if (onCreate && rol) onCreate({ nombre, correo, rol });
+    if (!rol) return;
+    const roleId = findRoleId(rol);
+    if (onCreate && roleId) {
+      onCreate({
+        nombre,
+        correo,
+        rol,
+        roleId,
+      });
+    }
     onOpenChange(false);
     setNombre("");
     setCorreo("");
@@ -88,16 +111,28 @@ export default function NewUserDialog({
           {/* Rol */}
           <div>
             <label className="font-semibold block mb-1">Rol</label>
-            <Select value={rol} onValueChange={(v) => setRol(v as RolUsuario)}>
+            <Select
+              value={rol}
+              onValueChange={(v) => setRol(v as RolUsuario)}
+              disabled={rolesLoading}
+            >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Seleccionar rol" />
               </SelectTrigger>
               <SelectContent className="w-full">
-                {roles.map((r) => (
-                  <SelectItem key={r} value={r}>
-                    {r}
-                  </SelectItem>
-                ))}
+                {rolesData &&
+                  rolesData
+                    .map((r) => ({
+                      backend: r.name,
+                      frontend: ROLE_TRANSLATIONS[r.name] as RolUsuario,
+                      id: r.id,
+                    }))
+                    .filter((r) => !!r.frontend)
+                    .map((r) => (
+                      <SelectItem key={r.id} value={r.frontend}>
+                        {r.frontend}
+                      </SelectItem>
+                    ))}
               </SelectContent>
             </Select>
           </div>
@@ -110,7 +145,9 @@ export default function NewUserDialog({
           <Button
             className="bg-black text-white hover:bg-zinc-800"
             onClick={handleCreate}
-            disabled={!nombre || !correo || !rol}
+            disabled={
+              !nombre || !correo || !rol || !findRoleId(rol) || rolesLoading
+            }
           >
             Crear Usuario
           </Button>

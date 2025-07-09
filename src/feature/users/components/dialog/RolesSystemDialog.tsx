@@ -9,46 +9,47 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useGetAllUsers } from "../../hooks/useGetAllUsers";
 
-type RoleVariant = "admin" | "vendedor" | "cajero" | "produccion" | "entregas";
-
-type Role = {
-  label: string;
-  variant: RoleVariant;
-  text: string;
-  count: number;
+const ROLE_TRANSLATIONS: Record<string, string> = {
+  ADMIN: "Administrador",
+  SELLER: "Vendedor",
+  CASHIER: "Cajero",
+  PRODUCTION: "Producción",
+  DELIVERY: "Entregas",
 };
 
-const roles: Role[] = [
+// Mantén tus variantes, textos, etc
+const rolesPreset = [
   {
     label: "Administrador",
+    backend: "ADMIN",
     variant: "admin",
     text: "Acceso completo a todas las funciones del sistema. Puede gestionar usuarios, inventario, pedidos, caja, entregas, producción y órdenes.",
-    count: 1,
   },
   {
     label: "Vendedor",
+    backend: "SELLER",
     variant: "vendedor",
     text: "Atiende a los clientes y gestiona pedidos en tienda. Acceso a la sección de pedidos y consulta de inventario.",
-    count: 2,
   },
   {
     label: "Cajero",
+    backend: "CASHIER",
     variant: "cajero",
     text: "Procesa pagos y maneja la caja registradora. Acceso a la sección de caja y procesamiento de pagos.",
-    count: 1,
   },
   {
     label: "Producción",
+    backend: "PRODUCTION",
     variant: "produccion",
     text: "Gestiona la producción diaria y órdenes de producción. Acceso a las secciones de producción y órdenes.",
-    count: 1,
   },
   {
     label: "Entregas",
+    backend: "DELIVERY",
     variant: "entregas",
     text: "Maneja las entregas de pedidos a clientes. Acceso a la sección de entregas y gestión de pedidos.",
-    count: 1,
   },
 ];
 
@@ -59,6 +60,25 @@ export default function RolesSystemDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
+  // Trae todos los usuarios
+  const { data: usersData, isLoading } = useGetAllUsers();
+
+  // Cuenta usuarios por rol de BD
+  const roleCounts: Record<string, number> = {};
+  if (usersData && Array.isArray(usersData)) {
+    usersData.forEach((user: any) => {
+      const backendRole = user.role;
+      if (backendRole) {
+        roleCounts[backendRole] = (roleCounts[backendRole] || 0) + 1;
+      }
+    });
+  }
+
+  const roles = rolesPreset.map((role) => ({
+    ...role,
+    count: roleCounts[role.backend] || 0,
+  }));
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="w-full max-w-[95vw] sm:max-w-[600px] md:max-w-[750px]">
@@ -83,7 +103,7 @@ export default function RolesSystemDialog({
                 <tr key={role.label} className="border-b last:border-b-0">
                   <td className="px-4 py-3">
                     <Badge
-                      variant={role.variant as RoleVariant}
+                      variant={role.variant as any}
                       className="font-semibold px-4 py-1 rounded-full"
                     >
                       {role.label}
@@ -93,7 +113,7 @@ export default function RolesSystemDialog({
                     {role.text}
                   </td>
                   <td className="px-4 py-3 font-medium text-gray-800">
-                    {role.count}
+                    {isLoading ? "..." : role.count}
                   </td>
                 </tr>
               ))}
