@@ -1,4 +1,3 @@
-// users/components/dialog/NewUserDialog.tsx
 import {
   Dialog,
   DialogContent,
@@ -20,8 +19,9 @@ import {
 import { useState } from "react";
 import type { RolUsuario } from "../../types";
 import { useGetAllRoles } from "../../hooks/useGetAllRoles";
+import { useCreateUser } from "../../hooks/useCreateUser";
+import { toast } from "sonner";
 
-// Diccionario: backend (en inglés) => frontend (en español)
 const ROLE_TRANSLATIONS: Record<string, RolUsuario> = {
   ADMIN: "Administrador",
   SELLER: "Vendedor",
@@ -33,26 +33,19 @@ const ROLE_TRANSLATIONS: Record<string, RolUsuario> = {
 export default function NewUserDialog({
   open,
   onOpenChange,
-  onCreate,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  // Ahora también devuelve el roleId, necesario para crear usuario
-  onCreate?: (user: {
-    nombre: string;
-    correo: string;
-    rol: RolUsuario;
-    roleId: number;
-  }) => void;
 }) {
   const [nombre, setNombre] = useState("");
   const [correo, setCorreo] = useState("");
   const [rol, setRol] = useState<RolUsuario | "">("");
+  const [password, setPassword] = useState("");
+  const [active, setActive] = useState(true);
 
-  // Carga dinámica de roles desde el backend
   const { data: rolesData, isLoading: rolesLoading } = useGetAllRoles();
+  const createUserMutation = useCreateUser();
 
-  // Encuentra el id del rol según el nombre en español
   const findRoleId = (rolEsp: RolUsuario) => {
     if (!rolesData) return undefined;
     const entry = rolesData.find((r) => ROLE_TRANSLATIONS[r.name] === rolEsp);
@@ -62,18 +55,31 @@ export default function NewUserDialog({
   const handleCreate = () => {
     if (!rol) return;
     const roleId = findRoleId(rol);
-    if (onCreate && roleId) {
-      onCreate({
-        nombre,
-        correo,
-        rol,
-        roleId,
-      });
+    if (roleId) {
+      createUserMutation.mutate(
+        {
+          name: nombre,
+          email: correo,
+          password,
+          active,
+          roleId,
+        },
+        {
+          onSuccess: () => {
+            onOpenChange(false);
+            setNombre("");
+            setCorreo("");
+            setRol("");
+            setPassword("");
+            setActive(true);
+            toast.success("Usuario creado correctamente 🎉");
+          },
+          onError: (error) => {
+            toast.error("Hubo un error al crear el usuario");
+          },
+        }
+      );
     }
-    onOpenChange(false);
-    setNombre("");
-    setCorreo("");
-    setRol("");
   };
 
   return (
@@ -108,6 +114,16 @@ export default function NewUserDialog({
               onChange={(e) => setCorreo(e.target.value)}
             />
           </div>
+          {/* Contraseña */}
+          <div>
+            <label className="font-semibold block mb-1">Contraseña</label>
+            <Input
+              type="password"
+              placeholder="Contraseña"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </div>
           {/* Rol */}
           <div>
             <label className="font-semibold block mb-1">Rol</label>
@@ -136,6 +152,19 @@ export default function NewUserDialog({
               </SelectContent>
             </Select>
           </div>
+          {/* Estado activo */}
+          <div className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              id="active"
+              checked={active}
+              onChange={(e) => setActive(e.target.checked)}
+              className="w-4 h-4"
+            />
+            <label htmlFor="active" className="font-medium">
+              Usuario activo
+            </label>
+          </div>
         </div>
 
         <DialogFooter className="mt-2">
@@ -146,8 +175,15 @@ export default function NewUserDialog({
             className="bg-black text-white hover:bg-zinc-800"
             onClick={handleCreate}
             disabled={
-              !nombre || !correo || !rol || !findRoleId(rol) || rolesLoading
+              !nombre ||
+              !correo ||
+              !rol ||
+              !password ||
+              !findRoleId(rol) ||
+              rolesLoading ||
+              createUserMutation.isLoading
             }
+            loading={createUserMutation.isLoading}
           >
             Crear Usuario
           </Button>

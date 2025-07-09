@@ -8,6 +8,7 @@ export function useCreateUser() {
     mutationFn: (data: UserCreateRequestDto) => createUser(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
+      
     },
   });
 }
