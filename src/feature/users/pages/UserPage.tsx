@@ -8,25 +8,26 @@ import {
 import { Button } from "@/components/ui/button";
 import { UserPlus, ShieldCheck } from "lucide-react";
 import { UserTable, NewUserDialog, RolesSystemDialog } from "../components";
+import { EditUserDialog } from "../components/dialog/EditUserDialog";
 import { useState } from "react";
 
 export default function UserPage() {
   const [newUserOpen, setNewUserOpen] = useState(false);
   const [rolesDialogOpen, setRolesDialogOpen] = useState(false);
+  const [editUserOpen, setEditUserOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<any | null>(null);
 
   return (
     <div className="p-4">
       <Card>
         <CardHeader>
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 w-full">
-            {/* Títulos */}
             <div>
               <CardTitle className="text-2xl">Lista de Usuarios</CardTitle>
               <CardDescription>
                 Gestione los usuarios y sus roles en el sistema.
               </CardDescription>
             </div>
-            {/* Botones */}
             <div className="flex flex-row gap-2 justify-start md:justify-end">
               <div className="flex flex-col gap-2 w-full md:flex-row md:justify-end md:w-auto">
                 <Button
@@ -50,15 +51,24 @@ export default function UserPage() {
           </div>
         </CardHeader>
         <CardContent>
-          <UserTable />
+          <UserTable
+            onEditUser={(user) => {
+              setSelectedUser(user);
+              setEditUserOpen(true);
+            }}
+          />
         </CardContent>
       </Card>
 
-      {/* Dialogs */}
       <NewUserDialog open={newUserOpen} onOpenChange={setNewUserOpen} />
       <RolesSystemDialog
         open={rolesDialogOpen}
         onOpenChange={setRolesDialogOpen}
+      />
+      <EditUserDialog
+        open={editUserOpen}
+        onOpenChange={setEditUserOpen}
+        user={selectedUser}
       />
     </div>
   );

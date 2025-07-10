@@ -1,4 +1,4 @@
-// src/user/api/user.ts
+// src/feature/users/api/user.ts
 import axios from "@/lib/axios";
 import type {
   UserListResponseDto,
@@ -36,8 +36,9 @@ export async function deleteUser(id: number): Promise<void> {
   await axios.delete(`/users/${id}`);
 }
 
-// (Opcional) Obtener roles disponibles, si tienes el endpoint
-export async function getAllRoles(): Promise<{ id: number; name: string }[]> {
-  const res = await axios.get("/roles/");
+// Obtener roles disponibles
+// src/feature/users/api/user.ts
+export async function getAllRoles(): Promise<{ id: number; name: string; count: number }[]> {
+  const res = await axios.get("/roles");
   return res.data;
 }
