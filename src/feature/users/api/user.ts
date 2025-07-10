@@ -39,6 +39,6 @@ export async function deleteUser(id: number): Promise<void> {
 // Obtener roles disponibles
 // src/feature/users/api/user.ts
 export async function getAllRoles(): Promise<{ id: number; name: string; count: number }[]> {
-  const res = await axios.get("/roles");
+  const res = await axios.get("/roles/");
   return res.data;
 }
