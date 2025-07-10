@@ -18,79 +18,78 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { useEffect, useState } from "react";
 import { useUpdateUser } from "../../hooks/useUpdateUser";
-import type { UserListResponseDto } from "../../types"; // ✅ CORREGIDO
-
-// Mapeo estático rol (string) → id (number)
-const ROLE_ID_MAP: Record<string, number> = {
-    ADMIN: 1,
-    SELLER: 2,
-    CASHIER: 3,
-    PRODUCTION: 4,
-    DELIVERY: 5,
-};
-
-// Rol mostrado en tabla (texto) → identificador string
-const ROLE_MAP_REVERSE: Record<string, keyof typeof ROLE_ID_MAP> = {
-    Administrador: "ADMIN",
-    Vendedor: "SELLER",
-    Cajero: "CASHIER",
-    Producción: "PRODUCTION",
-    Entregas: "DELIVERY",
-};
+import type { UserListResponseDto } from "../../types";
+import { useGetAllRoles } from "../../hooks/useGetAllRoles";
+import { toast } from "sonner";
 
 const ROLE_OPTIONS = [
-    { label: "Administrador", value: "ADMIN" },
-    { label: "Vendedor", value: "SELLER" },
-    { label: "Cajero", value: "CASHIER" },
-    { label: "Producción", value: "PRODUCTION" },
-    { label: "Entregas", value: "DELIVERY" },
+    { label: "Administrador", value: "Administrador" },
+    { label: "Vendedor", value: "Vendedor" },
+    { label: "Cajero", value: "Cajero" },
+    { label: "Producción", value: "Producción" },
+    { label: "Entregas", value: "Entregas" },
 ];
 
 type Props = {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    user: UserListResponseDto | null; // ✅ CORREGIDO
+    user: UserListResponseDto | null;
 };
 
 export function EditUserDialog({ open, onOpenChange, user }: Props) {
     const [nombre, setNombre] = useState("");
     const [correo, setCorreo] = useState("");
-    const [rol, setRol] = useState<keyof typeof ROLE_ID_MAP>("ADMIN");
+    const [rol, setRol] = useState<string>("Administrador");
     const [activo, setActivo] = useState(true);
     const [password, setPassword] = useState("");
 
+    const { data: rolesData } = useGetAllRoles();
     const { mutate: updateUser, isPending } = useUpdateUser();
 
     useEffect(() => {
-        if (user) {
-            setNombre(user.name || "");
-            setCorreo(user.email || "");
-            setRol(
-                ROLE_MAP_REVERSE[user.role as keyof typeof ROLE_MAP_REVERSE] ||
-                    "ADMIN"
-            );
-            setActivo(user.active ?? true);
-            setPassword("");
-        }
+        if (!user) return;
+
+        setNombre(user.name ?? "");
+        setCorreo(user.email ?? "");
+        setRol(user.role ?? "Administrador");
+        setActivo(user.active ?? true);
+        setPassword("");
     }, [user]);
 
     const handleSave = () => {
         if (!user) return;
 
+        const selectedRole = rolesData?.find((r) => r.name === rol);
+        if (!selectedRole) {
+            toast.error("Rol inválido");
+            return;
+        }
+
+        const trimmedPassword = password.trim();
+
+        const payload: any = {
+            name: nombre.trim(),
+            email: correo.trim(),
+            roleId: selectedRole.id,
+            active: activo,
+        };
+
+        if (trimmedPassword.length >= 6) {
+            payload.password = trimmedPassword;
+        }
+
         updateUser(
             {
                 id: user.id,
-                payload: {
-                    name: nombre,
-                    email: correo,
-                    roleId: ROLE_ID_MAP[rol],
-                    active: activo,
-                    password: password || undefined,
-                },
+                payload,
             },
             {
                 onSuccess: () => {
+                    toast.success("Usuario actualizado correctamente");
                     onOpenChange(false);
+                },
+                onError: () => {
+                    toast.error("No se pudo actualizar el usuario");
                 },
             }
         );
@@ -126,9 +125,7 @@ export function EditUserDialog({ open, onOpenChange, user }: Props) {
 
                     <Select
                         value={rol}
-                        onValueChange={(value) =>
-                            setRol(value as keyof typeof ROLE_ID_MAP)
-                        }
+                        onValueChange={(value) => setRol(value)}
                     >
                         <SelectTrigger>
                             <SelectValue placeholder="Seleccionar rol" />
@@ -142,12 +139,12 @@ export function EditUserDialog({ open, onOpenChange, user }: Props) {
                         </SelectContent>
                     </Select>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 select-none">
                         <Checkbox
                             id="activo"
                             checked={activo}
-                            onCheckedChange={(checked: boolean) =>
-                                setActivo(!!checked)
+                            onCheckedChange={(checked) =>
+                                setActivo(Boolean(checked))
                             }
                         />
                         <Label htmlFor="activo">Usuario activo</Label>
@@ -157,6 +154,7 @@ export function EditUserDialog({ open, onOpenChange, user }: Props) {
                         <Button
                             variant="outline"
                             onClick={() => onOpenChange(false)}
+                            type="button"
                         >
                             Cancelar
                         </Button>
