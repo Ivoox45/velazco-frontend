@@ -5,14 +5,17 @@ import "driver.js/dist/driver.css";
  * Inicia el tour interactivo para el módulo de entregas.
  * @param tab Estado de la pestaña/tab: "PAGADO" | "ENTREGADO"
  */
+import type { DriveStep } from "driver.js";
+import type { Side } from "driver.js";
+
 export default function startTourEntregas(tab: string = "PAGADO") {
-  let steps = [
+  const steps: DriveStep[] = [
     {
       element: ".search-entrega-driver",
       popover: {
         title: "Buscar cliente",
         description: "Puedes buscar entregas por nombre del cliente aquí.",
-        side: "bottom",
+        side: "bottom" as Side,
       },
     },
     {
@@ -20,12 +23,11 @@ export default function startTourEntregas(tab: string = "PAGADO") {
       popover: {
         title: "Filtrar por estado",
         description: "Filtra las órdenes por Pagados o Entregados.",
-        side: "bottom",
+        side: "bottom" as Side,
       },
     },
   ];
 
-  // Paso dinámico según el tab seleccionado
   if (tab === "PAGADO") {
     steps.push(
       {
@@ -33,7 +35,7 @@ export default function startTourEntregas(tab: string = "PAGADO") {
         popover: {
           title: "Pedido listo para entrega",
           description: "Aquí aparecen los pedidos listos para entregar.",
-          side: "top",
+          side: "top" as Side,
         },
       },
       {
@@ -41,7 +43,7 @@ export default function startTourEntregas(tab: string = "PAGADO") {
         popover: {
           title: "Confirmar entrega",
           description: "Haz clic aquí para confirmar la entrega al cliente.",
-          side: "left",
+          side: "left" as Side,
         },
       }
     );
@@ -52,7 +54,7 @@ export default function startTourEntregas(tab: string = "PAGADO") {
         popover: {
           title: "Pedido entregado",
           description: "Aquí aparecen los pedidos que ya han sido entregados.",
-          side: "top",
+          side: "top" as Side,
         },
       },
       {
@@ -60,7 +62,7 @@ export default function startTourEntregas(tab: string = "PAGADO") {
         popover: {
           title: "Ver detalles",
           description: "Haz clic aquí para ver los detalles del pedido entregado.",
-          side: "left",
+          side: "left" as Side,
         },
       }
     );
@@ -72,7 +74,5 @@ export default function startTourEntregas(tab: string = "PAGADO") {
     nextBtnText: "Siguiente",
     prevBtnText: "Anterior",
     doneBtnText: "Listo",
-    closeBtnText: "Cerrar",
-    opacity: 0.6,
   }).drive();
 }

@@ -55,8 +55,7 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
         </p>
       </div>
     );
-    // O si prefieres redireccionar:
-    // return <Navigate to="/dashboard" replace />;
+    
   }
 
   return <>{children}</>;

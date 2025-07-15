@@ -34,7 +34,7 @@ import { toast } from "sonner"; // feedback visual
 export function NavUser({
   user,
 }: {
-  user: { name: string; email: string; avatar: string; initials: string };
+  user: { name: string; email: string; avatar: string; initials: string; role: string; active: boolean };
 }) {
   const { isMobile } = useSidebar();
   const logout = useAuthStore((s) => s.logout);
@@ -50,7 +50,7 @@ export function NavUser({
       toast.success("Sesión cerrada correctamente.");
     } catch (e) {
       toast.error(
-        "No se pudo cerrar sesión en el servidor, pero se cerró localmente."
+        "No se pudo cerrar sesión en el servidor, pero se cerró localmente."+ e
       );
     }
     logout(); // Limpia estado local (zustand)

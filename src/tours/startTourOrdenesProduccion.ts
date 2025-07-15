@@ -1,4 +1,4 @@
-import { driver } from "driver.js";
+import { driver, type Side } from "driver.js";
 import "driver.js/dist/driver.css";
 
 /**
@@ -6,7 +6,14 @@ import "driver.js/dist/driver.css";
  * @param tab El tab activo: "nuevas" | "historial"
  */
 export default function startTourOrdenesProduccion(tab: string = "nuevas") {
-  let steps = [
+  const steps: Array<{
+    element: string;
+    popover: {
+      title: string;
+      description: string;
+      side: Side;
+    };
+  }> = [
     {
       element: ".new-order-driver",
       popover: {
@@ -53,7 +60,5 @@ export default function startTourOrdenesProduccion(tab: string = "nuevas") {
     nextBtnText: "Siguiente",
     prevBtnText: "Anterior",
     doneBtnText: "Listo",
-    closeBtnText: "Cerrar",
-    opacity: 0.6,
   }).drive();
 }

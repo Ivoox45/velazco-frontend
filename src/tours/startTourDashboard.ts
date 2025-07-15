@@ -28,8 +28,6 @@ export function startTourDashboardGeneral() {
     nextBtnText: "Siguiente",
     prevBtnText: "Anterior",
     doneBtnText: "Listo",
-    closeBtnText: "Cerrar",
-    opacity: 0.6,
   }).drive();
 }
 
@@ -60,7 +58,5 @@ export function startTourDashboardReports() {
     nextBtnText: "Siguiente",
     prevBtnText: "Anterior",
     doneBtnText: "Listo",
-    closeBtnText: "Cerrar",
-    opacity: 0.6,
   }).drive();
 }

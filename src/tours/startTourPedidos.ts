@@ -44,7 +44,5 @@ export default function startTourPedidos() {
     nextBtnText: "Siguiente",
     prevBtnText: "Anterior",
     doneBtnText: "Listo",
-    closeBtnText: "Cerrar",
-    opacity: 0.6,
   }).drive();
 }

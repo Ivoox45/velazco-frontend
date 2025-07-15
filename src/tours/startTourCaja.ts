@@ -1,4 +1,4 @@
-import { driver, Side } from "driver.js";
+import { driver, type Side} from "driver.js";
 import "driver.js/dist/driver.css";
 
 
@@ -17,7 +17,7 @@ export default function startTourCaja(tab: string = "PENDIENTE") {
       popover: {
         title: "Filtrar por estado",
         description: "Filtra los pedidos por Pendiente, Pagado o Cancelado.",
-        side: "bottom",
+        side: "bottom" as Side,
       },
     }
   ];
@@ -67,7 +67,7 @@ export default function startTourCaja(tab: string = "PENDIENTE") {
         popover: {
           title: "Pedido cancelado",
           description: "Aquí se muestran los pedidos cancelados.",
-          side: "top",
+          side: "top" as Side,
         },
       },
       {
@@ -75,7 +75,7 @@ export default function startTourCaja(tab: string = "PENDIENTE") {
         popover: {
           title: "Ver detalles",
           description: "Haz clic aquí para ver los detalles del pedido cancelado.",
-          side: "left",
+          side: "left" as Side,
         },
       }
     );
@@ -87,7 +87,5 @@ export default function startTourCaja(tab: string = "PENDIENTE") {
     nextBtnText: "Siguiente",
     prevBtnText: "Anterior",
     doneBtnText: "Listo",
-    closeBtnText: "Cerrar",
-    opacity: 0.6,
   }).drive();
 }

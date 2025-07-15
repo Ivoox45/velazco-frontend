@@ -38,14 +38,20 @@ export default function Layout() {
   const currentPath = location.pathname;
   const title = routeTitles[currentPath] || "Módulo";
 
+  // Extiende la interfaz Window para incluir las funciones de tour
+  interface WindowWithTours extends Window {
+    [key: `startTour_${string}`]: (() => void) | undefined;
+  }
+
   function startTour() {
     const modulo = moduleTours[currentPath];
+    const win = window as unknown as WindowWithTours;
     if (
       modulo &&
       typeof window !== "undefined" &&
-      typeof window[`startTour_${modulo}`] === "function"
+      typeof win[`startTour_${modulo}`] === "function"
     ) {
-      window[`startTour_${modulo}`]();
+      win[`startTour_${modulo}`]!();
     } else {
       alert("No hay guía para este módulo aún.");
     }
