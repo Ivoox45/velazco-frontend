@@ -9,18 +9,49 @@ import {
 import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
 import { useDailySales } from "../../hooks/useDailySales";
-import { PDFDownloadLink } from "@react-pdf/renderer";
 import { DailySalePDF } from "../pdf/DailySalePDF";
+import { getOrGeneratePdfBlob } from "@/utils/pdfCache";
+import { useState } from "react";
 
 // Función para saber si la fecha es anterior a hoy (no genera PDF si es hoy)
 function isPastDay(dateStr: string) {
   const today = new Date();
   const [year, month, day] = dateStr.split('-').map(Number);
   const date = new Date(year, month - 1, day);
-  // Pone la hora en 00:00:00 para ambos
   today.setHours(0,0,0,0);
   date.setHours(0,0,0,0);
   return date < today;
+}
+
+// Botón que cachea y descarga el PDF
+function SavePdfButton({ sale, fileName }: { sale: any; fileName: string }) {
+  const [loading, setLoading] = useState(false);
+
+  const handleDownload = async () => {
+    setLoading(true);
+    try {
+      const blob = await getOrGeneratePdfBlob(sale.date, <DailySalePDF sale={sale} />);
+      const url = URL.createObjectURL(blob);
+
+      // Forzar descarga
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = fileName;
+      a.click();
+
+      // Limpiar la URL al poco tiempo (para liberar memoria)
+      setTimeout(() => URL.revokeObjectURL(url), 5000);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Button variant="outline" size="sm" onClick={handleDownload} disabled={loading}>
+      <Download className="mr-2 h-4 w-4" />
+      {loading ? "Generando..." : "PDF"}
+    </Button>
+  );
 }
 
 export default function DailyReport() {
@@ -33,7 +64,7 @@ export default function DailyReport() {
   const sortedData = [...data].sort((a, b) => b.date.localeCompare(a.date));
 
   return (
-    <div className="overflow-auto rounded-md border">
+    <div className="overflow-auto rounded-md border reporte-table">
       <Table>
         <TableHeader>
           <TableRow>
@@ -53,23 +84,14 @@ export default function DailyReport() {
                 S/.{sale.totalSales.toFixed(2)}
               </TableCell>
               <TableCell>
-                {/* Total de productos vendidos en el día */}
                 {sale.products.reduce((sum, p) => sum + p.quantitySold, 0)}
               </TableCell>
               <TableCell>
                 {isPastDay(sale.date) && (
-                  <PDFDownloadLink
-                    document={<DailySalePDF sale={sale} />}
+                  <SavePdfButton
+                    sale={sale}
                     fileName={`reporte-ventas-${sale.date}.pdf`}
-                    className="inline-flex"
-                  >
-                    {({ loading }) => (
-                      <Button variant="outline" size="sm" disabled={loading}>
-                        <Download className="mr-2 h-4 w-4" />
-                        {loading ? "Generando..." : "PDF"}
-                      </Button>
-                    )}
-                  </PDFDownloadLink>
+                  />
                 )}
               </TableCell>
             </TableRow>

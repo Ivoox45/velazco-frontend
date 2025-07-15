@@ -19,38 +19,26 @@ import type {
   ProductionStatus,
 } from "../types";
 
+import startTourProduccion from "../../../tours/startTourProduccion";
+
 export default function ProduccionPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [finishDialogOpen, setFinishDialogOpen] = useState(false);
   const [status, setStatus] = useState<EstadoProduccion>("PENDIENTE");
 
-  // Obtener órdenes del día
   const { data: dailyOrders, isLoading, isError } = useDailyProductions();
-
-  // Primera orden
   const firstOrder = dailyOrders?.[0];
-
-  // Estado de la orden real desde el backend
   const productionStatus = firstOrder?.status as ProductionStatus | undefined;
 
-  // Sincronizar status local con backend
   useEffect(() => {
     if (!productionStatus) return;
     if (productionStatus === "PENDIENTE") setStatus("PENDIENTE");
     else if (productionStatus === "EN_PROCESO") setStatus("PRODUCCION");
-    // Si es COMPLETO o INCOMPLETO, ya no hay acciones, es estado final.
-    // Puedes poner lo que quieras aquí si tu UI lo requiere.
   }, [productionStatus]);
 
-  // Mutation para cambiar estado
-  const { mutate: changeStatus, isPending: isChangingStatus } =
-    useUpdateProductionStatus();
+  const { mutate: changeStatus, isPending: isChangingStatus } = useUpdateProductionStatus();
+  const { mutate: finishOrder, isPending: isFinishingOrder } = useFinalizeProduction();
 
-  // Mutation para finalizar producción
-  const { mutate: finishOrder, isPending: isFinishingOrder } =
-    useFinalizeProduction();
-
-  // Para StartProductionDialog
   const productsForStart: StartProduct[] =
     firstOrder?.details.map((prod) => ({
       producto: prod.product.name,
@@ -58,14 +46,12 @@ export default function ProduccionPage() {
       responsable: prod.responsible?.name ?? "—",
     })) || [];
 
-  // Para FinishProductionDialog y tabla
   const productsForFinish: ProductForFinish[] =
     firstOrder?.details.map((prod) => ({
       producto: prod.product.name,
       cantidad: prod.requestedQuantity,
     })) || [];
 
-  // Para la tabla principal
   const tableOrders: ProductOrder[] = productsForFinish.map((o) => ({
     producto: o.producto,
     cantidad: `${o.cantidad} unidades`,
@@ -75,7 +61,6 @@ export default function ProduccionPage() {
         : undefined,
   }));
 
-  // Encabezado
   const orderNumber =
     firstOrder && firstOrder.id
       ? `OP-${String(firstOrder.id).padStart(6, "0")}`
@@ -83,7 +68,6 @@ export default function ProduccionPage() {
   const fechaOrden = firstOrder?.productionDate || "—";
   const responsable = firstOrder?.assignedTo?.name || "—";
 
-  // Iniciar producción
   const handleStartProduction = () => {
     if (!firstOrder) return;
     changeStatus(
@@ -97,7 +81,6 @@ export default function ProduccionPage() {
     );
   };
 
-  // Finalizar orden
   const handleFinishOrder = (resultados: ProductoForm[]) => {
     if (!firstOrder) return;
     const productos = resultados.map((r, idx) => ({
@@ -119,7 +102,19 @@ export default function ProduccionPage() {
     );
   };
 
-  // Loader y error
+  // Registrar función del tour global, pasando el estado actual para que apunte al botón correcto
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      window.startTour_produccion = () =>
+        startTourProduccion(productionStatus === "EN_PROCESO" ? "EN_PROCESO" : "PENDIENTE");
+    };
+    return () => {
+      if (typeof window !== "undefined") {
+        delete window.startTour_produccion;
+      }
+    };
+  }, [productionStatus]);
+
   if (isLoading)
     return (
       <div className="text-center text-gray-500 py-16">
@@ -132,8 +127,6 @@ export default function ProduccionPage() {
         Error cargando orden del día.
       </div>
     );
-
-  // Pantalla vacía cuando no hay orden
   if (!isLoading && (!dailyOrders || dailyOrders.length === 0)) {
     return (
       <div className="flex flex-col items-center justify-center py-24 text-gray-500 gap-4">
@@ -147,7 +140,6 @@ export default function ProduccionPage() {
     );
   }
 
-  // Lógica para badge y mostrar/ocultar botones según estado final
   const badgeByStatus: Record<
     ProductionStatus,
     { color: string; label: string }
@@ -187,11 +179,20 @@ export default function ProduccionPage() {
         onFinish={handleFinishOrder}
         onCancel={() => setFinishDialogOpen(false)}
         products={productsForFinish}
-        instrucciones={firstOrder?.comments}
+        instrucciones={
+          <>
+            {firstOrder?.comments && (
+              <div>{firstOrder.comments}</div>
+            )}
+            <div className="mt-2 text-blue-700 dark:text-blue-200 font-medium">
+              Aquí debes ingresar la <b>cantidad de productos realmente elaborados</b> (pueden ser menos si hubo inconvenientes o desperdicio).
+            </div>
+          </>
+        }
         loading={isFinishingOrder}
       />
 
-      {/* Encabezado de la orden */}
+      {/* Encabezado */}
       <div className="flex flex-col gap-1">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 md:gap-4  w-full">
           <div className="w-full min-w-0">
@@ -216,10 +217,10 @@ export default function ProduccionPage() {
               <span className="break-words">{responsable}</span>
             </div>
           </div>
-          {/* Solo se muestra el botón correcto según el estado */}
+          {/* Botón que cambia según el estado */}
           {productionStatus === "PENDIENTE" ? (
             <Button
-              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded-lg text-sm flex items-center gap-2 shadow-none w-full md:w-auto min-w-0"
+              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2 rounded-lg text-sm flex items-center gap-2 shadow-none w-full md:w-auto min-w-0 start-production-driver"
               onClick={() => setDialogOpen(true)}
               disabled={!firstOrder}
             >
@@ -228,7 +229,7 @@ export default function ProduccionPage() {
             </Button>
           ) : productionStatus === "EN_PROCESO" ? (
             <Button
-              className="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-2 rounded-lg text-sm flex items-center gap-2 shadow-none w-full md:w-auto min-w-0"
+              className="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-2 rounded-lg text-sm flex items-center gap-2 shadow-none w-full md:w-auto min-w-0 finish-production-driver"
               onClick={() => setFinishDialogOpen(true)}
               disabled={!firstOrder}
             >
@@ -240,7 +241,7 @@ export default function ProduccionPage() {
       </div>
 
       {/* Tabs de producción */}
-      <div className="w-full">
+      <div className="w-full production-tabs-driver">
         <ProductionTabs status={status} onChange={setStatus} />
       </div>
 
@@ -255,14 +256,14 @@ export default function ProduccionPage() {
                 ? "Orden en Producción"
                 : "Orden Finalizada"}
             </CardTitle>
-            {/* Instrucciones siempre visibles */}
+            {/* Instrucciones visibles */}
             {firstOrder && (
               <div
-                className="
-      bg-blue-50 text-blue-900 rounded-md px-4 py-2 font-normal text-[15px]
-      dark:bg-blue-950 dark:text-blue-100
-      border border-blue-100 dark:border-blue-900
-    "
+                className="instructions-driver
+                bg-blue-50 text-blue-900 rounded-md px-4 py-2 font-normal text-[15px]
+                dark:bg-blue-950 dark:text-blue-100
+                border border-blue-100 dark:border-blue-900
+                "
               >
                 <span className="font-semibold">
                   Instrucciones de la orden:
@@ -272,7 +273,9 @@ export default function ProduccionPage() {
             )}
           </CardHeader>
           <CardContent>
-            <ProductionTable orders={tableOrders} />
+            <div className="table-production-driver">
+              <ProductionTable orders={tableOrders} />
+            </div>
           </CardContent>
         </Card>
       </div>

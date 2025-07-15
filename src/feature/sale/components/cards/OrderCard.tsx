@@ -9,12 +9,14 @@ interface OrderCardProps {
   order: OrderListResponseDto;
   onConfirm: () => void;
   onCancel: () => void;
+  confirmBtnClass?: string;
 }
 
 export default function OrderCard({
   order,
   onConfirm,
   onCancel,
+  confirmBtnClass = "", // valor por defecto
 }: OrderCardProps) {
   const subtotal = order.details.reduce(
     (sum, detail) => sum + detail.quantity * detail.unitPrice,
@@ -50,16 +52,19 @@ export default function OrderCard({
             <Button variant="outline" onClick={onCancel}>
               Cancelar
             </Button>
-            <Button onClick={onConfirm}>Confirmar Pago</Button>
+            <Button
+              onClick={onConfirm}
+              className={confirmBtnClass}
+            >
+              Confirmar Pago
+            </Button>
           </div>
         )}
-        {order.status === "PAGADO" && (
-          <Button className="mt-2" onClick={onConfirm}>
-            Ver Detalles
-          </Button>
-        )}
-        {order.status === "CANCELADO" && (
-          <Button className="mt-2" onClick={onConfirm}>
+        {order.status !== "PENDIENTE" && (
+          <Button
+            className={`mt-2 ${confirmBtnClass}`}
+            onClick={onConfirm}
+          >
             Ver Detalles
           </Button>
         )}

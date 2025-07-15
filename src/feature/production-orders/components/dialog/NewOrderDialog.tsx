@@ -30,8 +30,7 @@ import { toast } from "sonner";
 import type { ProductionCreateRequestDto } from "../../types";
 import { useGetAvailableProducts } from "../../hooks";
 import { useCreateProduction } from "../../hooks";
-
-const responsableOptions = [{ id: 1, name: "Administrador" }];
+import { useUsers } from "../../hooks/useUsers"; // <-- Importa el hook
 
 export default function NewOrderDialog({
   children,
@@ -50,6 +49,13 @@ export default function NewOrderDialog({
   const { data: productCatalog, isLoading: loadingProducts } =
     useGetAvailableProducts();
   const createMutation = useCreateProduction();
+
+  // --- Aquí traes los usuarios y filtras SOLO los de Producción (con tilde) ---
+  const { data: users = [], isLoading: loadingUsers } = useUsers();
+  const responsablesProduccion = users.filter(
+    (u) => u.role?.toLocaleLowerCase() === "producción"
+  );
+  // ------------------------------------------------------------------------
 
   const isPastDate = (date: Date) => {
     const today = new Date();
@@ -193,12 +199,27 @@ export default function NewOrderDialog({
               <label className="block text-sm font-medium mb-1">
                 Responsable
               </label>
-              <Select value={responsable} onValueChange={setResponsable}>
+              <Select
+                value={responsable}
+                onValueChange={setResponsable}
+                disabled={loadingUsers}
+              >
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Asignar responsable" />
+                  <SelectValue
+                    placeholder={
+                      loadingUsers
+                        ? "Cargando responsables..."
+                        : "Asignar responsable"
+                    }
+                  />
                 </SelectTrigger>
                 <SelectContent>
-                  {responsableOptions.map((r) => (
+                  {responsablesProduccion.length === 0 && (
+                    <div className="p-2 text-gray-500 text-sm">
+                      No hay usuarios con rol Producción
+                    </div>
+                  )}
+                  {responsablesProduccion.map((r) => (
                     <SelectItem key={r.id} value={String(r.id)}>
                       {r.name}
                     </SelectItem>

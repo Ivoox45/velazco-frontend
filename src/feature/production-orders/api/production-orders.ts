@@ -1,5 +1,6 @@
 import axios from "@/lib/axios";
 import type {
+  UserListResponseDto,
   ProductionCreateRequestDto,
   ProductionCreateResponseDto,
   ProductionUpdateRequestDto,
@@ -48,5 +49,10 @@ export async function getProductionById(
   id: number
 ): Promise<ProductionCreateResponseDto> {
   const res = await axios.get(`/productions/${id}`);
+  return res.data;
+}
+
+export async function getAllUsers(): Promise<UserListResponseDto[]> {
+  const res = await axios.get("/users");
   return res.data;
 }

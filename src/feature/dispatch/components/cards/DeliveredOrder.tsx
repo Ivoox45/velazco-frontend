@@ -37,7 +37,7 @@ export default function DeliveredOrder({ order }: DeliveredOrderProps) {
       <ul>
         {order.details.map((item, idx) => (
           <li key={idx}>
-            {item.quantity} x {item.product.name} @ $
+            {item.quantity} x {item.product.name} @ S/.
             {parseFloat(item.unitPrice).toFixed(2)}
           </li>
         ))}

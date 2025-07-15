@@ -96,3 +96,10 @@ export interface ProductDetail {
   producedQuantity?: number;  // (opcional, si lo tienes)
   comments?: string;          // Motivo si está incompleto
 }
+export type UserListResponseDto = {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+  active: boolean;
+};

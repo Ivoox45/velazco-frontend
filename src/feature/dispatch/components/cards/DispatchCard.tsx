@@ -9,16 +9,21 @@ import type { DeliveredOrder } from "../../types";
 
 interface DispatchCardProps {
   order: DeliveredOrder;
+  confirmBtnClass?: string;
 }
 
-export default function DispatchCard({ order }: DispatchCardProps) {
+export default function DispatchCard({ order, confirmBtnClass }: DispatchCardProps) {
   const [openDialog, setOpenDialog] = useState(false);
 
-  // Calcula el subtotal sumando cantidad * precio unitario convertido a número
   const subtotal = order.details.reduce(
     (total, item) => total + item.quantity * parseFloat(item.unitPrice),
     0
   );
+
+  const badgeColor =
+    order.status === "ENTREGADO"
+      ? "bg-blue-100 text-blue-800"
+      : "bg-green-100 text-green-800";
 
   return (
     <>
@@ -29,20 +34,12 @@ export default function DispatchCard({ order }: DispatchCardProps) {
           <div className="text-sm text-muted-foreground">
             {order.clientName}
           </div>
-          <Badge
-            className={`mt-1 ${
-              order.status === "ENTREGADO"
-                ? "bg-blue-100 text-blue-800"
-                : "bg-green-100 text-green-800"
-            }`}
-          >
-            {order.status}
-          </Badge>
+          <Badge className={`mt-1 ${badgeColor}`}>{order.status}</Badge>
         </div>
 
         {/* Información adicional y botón para detalles */}
         <div className="flex flex-col items-end">
-          <div className="font-semibold text-lg">${subtotal.toFixed(2)}</div>
+          <div className="font-semibold text-lg">S/.{subtotal.toFixed(2)}</div>
           <div className="text-xs text-muted-foreground">
             {order.deliveryDate
               ? format(new Date(order.deliveryDate), "dd/MM/yyyy - HH:mm", {
@@ -52,14 +49,15 @@ export default function DispatchCard({ order }: DispatchCardProps) {
                   locale: es,
                 })}
           </div>
-
-          <Button className="mt-2" onClick={() => setOpenDialog(true)}>
+          <Button
+            className={`mt-2 ${confirmBtnClass ?? ""}`}
+            onClick={() => setOpenDialog(true)}
+          >
             Ver Detalles
           </Button>
         </div>
       </Card>
 
-      {/* Diálogo para confirmar o ver detalles del pedido */}
       <DispatchConfirmDialog
         open={openDialog}
         onClose={() => setOpenDialog(false)}

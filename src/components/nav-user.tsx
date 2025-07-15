@@ -42,18 +42,22 @@ export function NavUser({
 
   // Estado para el dialog
   const [open, setOpen] = useState(false);
+  const [openProfile, setOpenProfile] = useState(false);
 
   const handleConfirmLogout = async () => {
     try {
       await logoutApi(); // Hace logout en backend (borra cookie/session)
       toast.success("Sesión cerrada correctamente.");
     } catch (e) {
-      toast.error("No se pudo cerrar sesión en el servidor, pero se cerró localmente.");
+      toast.error(
+        "No se pudo cerrar sesión en el servidor, pero se cerró localmente."
+      );
     }
     logout(); // Limpia estado local (zustand)
     setOpen(false);
     navigate("/"); // Regresa al login
   };
+
 
   return (
     <>
@@ -91,7 +95,9 @@ export function NavUser({
                     {user.avatar ? (
                       <AvatarImage src={user.avatar} alt={user.name} />
                     ) : null}
-                    <AvatarFallback className="">{user.initials}</AvatarFallback>
+                    <AvatarFallback className="dark:text-white">
+                      {user.initials}
+                    </AvatarFallback>
                   </Avatar>
 
                   <div className="grid flex-1 text-left text-sm leading-tight">
@@ -106,7 +112,7 @@ export function NavUser({
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
               <DropdownMenuGroup>
-                <DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setOpenProfile(true)}>
                   <BadgeCheck />
                   Cuenta
                 </DropdownMenuItem>
@@ -138,6 +144,41 @@ export function NavUser({
             <Button variant="destructive" onClick={handleConfirmLogout}>
               Cerrar sesión
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={openProfile} onOpenChange={setOpenProfile}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Perfil de usuario</DialogTitle>
+            <DialogDescription>Consulta tus datos de cuenta.</DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col items-center gap-4 py-2">
+            <Avatar className="w-16 h-16">
+              {user.avatar ? (
+                <AvatarImage src={user.avatar} alt={user.name} />
+              ) : null}
+              <AvatarFallback>{user.initials}</AvatarFallback>
+            </Avatar>
+            <div className="text-center space-y-1">
+              <div className="font-bold text-lg">{user.name}</div>
+              <div className="text-sm text-muted-foreground">{user.email}</div>
+              <div className="text-sm">
+                Rol: <span className="font-medium">{user.role}</span>
+              </div>
+              <div className="text-sm">
+                Estado:{" "}
+                {user.active ? (
+                  <span className="text-green-600 font-semibold">Activo</span>
+                ) : (
+                  <span className="text-red-600 font-semibold">Inactivo</span>
+                )}
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button onClick={() => setOpenProfile(false)}>Cerrar</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -50,8 +50,13 @@ export default function ProductCardList({ query, category }: Props) {
   return (
     <div className="px-4 sm:px-6 lg:px-8">
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-x-4 gap-y-8">
-        {paginatedProducts.map((product: Product) => (
-          <ProductCard key={product.id} product={product} />
+        {paginatedProducts.map((product: Product, idx: number) => (
+          <div
+            key={product.id}
+            className={idx === 0 ? "producto-driver" : undefined}
+          >
+            <ProductCard product={product} />
+          </div>
         ))}
       </div>
 

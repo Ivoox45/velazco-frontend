@@ -1,5 +1,4 @@
 // src/feature/auth/components/LoginForm.tsx
-import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -16,6 +15,27 @@ import { useLogin } from "../../hooks/useLogin";
 import { toast } from "sonner";
 import { useNavigate } from "react-router";
 import { useQueryClient } from "@tanstack/react-query";
+import { useAuthStore } from "@/store/useAuthStore";
+import { useEffect, useState } from "react";
+import { normalizeRole } from "@/utils/normalizeRole";
+
+// Devuelve la ruta home según el rol
+function getHomeRouteByRole(role?: string) {
+  switch (normalizeRole(role ?? "")) {
+    case "ADMINISTRADOR":
+      return "/dashboard";
+    case "CAJERO":
+      return "/caja";
+    case "VENDEDOR":
+      return "/pedidos";
+    case "PRODUCCION":
+      return "/produccion";
+    case "ENTREGAS":
+      return "/entregas";
+    default:
+      return "/reconocimientos";
+  }
+}
 
 export function LoginForm({
   className,
@@ -27,15 +47,23 @@ export function LoginForm({
   const loginMutation = useLogin();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const user = useAuthStore((state) => state.user); // OBSERVA EL USER DEL STORE
+  const [shouldRedirect, setShouldRedirect] = useState(false);
+
+  // Efecto para navegar CUANDO el usuario ya esté cargado y debe redirigir
+  useEffect(() => {
+    if (shouldRedirect && user?.role) {
+      navigate(getHomeRouteByRole(user.role));
+    }
+  }, [shouldRedirect, user, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       await loginMutation.mutateAsync({ email, password });
-      // Esperar a que el perfil se refresque y esté en el store antes de navegar
       await queryClient.refetchQueries({ queryKey: ["profile"] });
       toast.success("Inicio de sesión exitoso");
-      navigate("/dashboard");
+      setShouldRedirect(true); // Espera a que el usuario esté seteado en Zustand
     } catch (error: any) {
       const msg =
         error?.response?.data?.message ||
@@ -76,11 +104,11 @@ export function LoginForm({
               <div className="grid gap-3">
                 <div className="flex items-center">
                   <Label htmlFor="password">Contraseña</Label>
-                 
                 </div>
                 <div className="relative">
                   <Input
                     id="password"
+                    placeholder="Contraseña"
                     type={showPassword ? "text" : "password"}
                     required
                     value={password}

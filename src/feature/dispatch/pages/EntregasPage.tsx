@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import DispatchSearchInput from "../components/input/DispatchSearchInput";
 import DispatchTabs, {
   type EstadoDespacho,
@@ -7,6 +7,7 @@ import DispatchCard from "../components/cards/DispatchCard";
 import useGetDispatchedOrders from "../hooks/useGetDispatchedOrders";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import startTourEntregas from "../../../tours/startTourEntregas"; // <- ¡importa aquí!
 
 export default function EntregasPage() {
   const [estado, setEstado] = useState<EstadoDespacho>("PAGADO");
@@ -14,7 +15,6 @@ export default function EntregasPage() {
   const [page, setPage] = useState(0);
 
   const esEstadoFiltrable = estado !== "TODOS";
-
   const { data, isLoading } = useGetDispatchedOrders(
     estado as "PAGADO" | "ENTREGADO",
     page,
@@ -23,10 +23,23 @@ export default function EntregasPage() {
   );
 
   const ordenes = esEstadoFiltrable ? data?.content || [] : [];
-
   const ordenesFiltradas = ordenes.filter((orden) =>
     orden.clientName.toLowerCase().includes(search.toLowerCase())
   );
+
+  // -- REGISTRA EL TOUR GLOBAL --
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      window.startTour_entregas = (tab: string) =>
+        startTourEntregas(tab || estado);
+    }
+    return () => {
+      if (typeof window !== "undefined") {
+        delete window.startTour_entregas;
+      }
+    };
+  }, [estado]);
+  // -----------------------------
 
   const handlePageChange = (newPage: number) => {
     if (newPage >= 0 && data && newPage < data.totalPages) {
@@ -48,16 +61,20 @@ export default function EntregasPage() {
       {/* Filtros */}
       <div className="flex flex-col gap-2">
         <div className="w-full sm:max-w-[250px]">
-          <DispatchSearchInput value={search} onChange={setSearch} />
+          <DispatchSearchInput
+            value={search}
+            onChange={setSearch}
+            className="search-entrega-driver"
+          />
         </div>
-
         <div className="w-full">
           <DispatchTabs
             status={estado}
             onChange={(nuevoEstado) => {
               setEstado(nuevoEstado);
-              setPage(0); // Reiniciar paginación
+              setPage(0);
             }}
+            className="tabs-entrega-driver"
           />
         </div>
       </div>
@@ -68,9 +85,25 @@ export default function EntregasPage() {
           [...Array(5)].map((_, i) => <CardSkeleton key={i} />)
         ) : (
           <>
-            {ordenesFiltradas.map((orden) => (
-              <DispatchCard key={orden.id} order={orden} />
-            ))}
+            {ordenesFiltradas.map((orden, idx) => {
+              let orderClass = "";
+              let btnClass = "";
+              if (idx === 0) {
+                if (estado === "PAGADO") {
+                  orderClass = "order-entrega-driver";
+                  btnClass = "confirm-entrega-driver";
+                }
+                if (estado === "ENTREGADO") {
+                  orderClass = "order-entregado-driver";
+                  btnClass = "details-entregado-driver";
+                }
+              }
+              return (
+                <div key={orden.id} className={orderClass}>
+                  <DispatchCard order={orden} confirmBtnClass={btnClass} />
+                </div>
+              );
+            })}
 
             {ordenesFiltradas.length > 0 && data && data.totalPages > 1 && (
               <div className="flex justify-center items-center gap-2 mt-4">

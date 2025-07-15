@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import OrderCard from "../components/cards/OrderCard";
 import SaleSearchInput from "../components/input/SaleSearchInput";
@@ -12,6 +12,7 @@ import { CancelOrderDialog } from "../components/dialogs/CancelOrderDialog";
 import type { OrderListResponseDto } from "../types";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import startTourCaja from "../../../tours/startTourCaja";
 
 export default function CajaPage() {
   const [status, setStatus] = useState("PENDIENTE");
@@ -30,13 +31,14 @@ export default function CajaPage() {
   const filteredOrders = data?.content.filter((order) =>
     order.clientName.toLowerCase().includes(search.toLowerCase())
   );
+
   function OrderCardSkeleton() {
     return (
       <div className="border rounded-md p-4 space-y-2 w-full">
-        <Skeleton className="h-5 w-1/3" /> {/* Pedido ID */}
-        <Skeleton className="h-4 w-1/2" /> {/* Cliente */}
-        <Skeleton className="h-4 w-24" /> {/* Estado */}
-        <Skeleton className="h-10 w-28 mt-2" /> {/* Botones */}
+        <Skeleton className="h-5 w-1/3" />
+        <Skeleton className="h-4 w-1/2" />
+        <Skeleton className="h-4 w-24" />
+        <Skeleton className="h-10 w-28 mt-2" />
       </div>
     );
   }
@@ -84,11 +86,27 @@ export default function CajaPage() {
     }
   };
 
+  // Asigna la función de tour al window
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      window.startTour_caja = (tab: string) => startTourCaja(tab || status);
+    }
+    return () => {
+      if (typeof window !== "undefined") {
+        delete window.startTour_caja;
+      }
+    };
+  }, [status]);
+
   return (
     <div className="p-4 space-y-4">
       <div className="flex flex-col gap-2">
         <div className="w-full sm:max-w-[250px]">
-          <SaleSearchInput value={search} onChange={setSearch} />
+          <SaleSearchInput
+            value={search}
+            onChange={setSearch}
+            className="search-client-driver"
+          />
         </div>
         <div className="w-full">
           <OrderTabs
@@ -97,6 +115,7 @@ export default function CajaPage() {
               setStatus(newStatus);
               setPage(0);
             }}
+            className="tabs-caja-driver"
           />
         </div>
       </div>
@@ -109,14 +128,36 @@ export default function CajaPage() {
         </div>
       ) : (
         <div className="space-y-4">
-          {filteredOrders?.map((order) => (
-            <OrderCard
-              key={order.id}
-              order={order}
-              onConfirm={() => handleOpenAction(order)}
-              onCancel={() => handleOpenCancel(order)}
-            />
-          ))}
+          {filteredOrders?.map((order, idx) => {
+            // Clases dinámicas por tab/estado
+            let orderClass = "";
+            let buttonClass = "";
+            if (idx === 0) {
+              if (status === "PENDIENTE") {
+                orderClass = "order-pendiente-driver";
+                buttonClass = "confirm-pendiente-driver";
+              }
+              if (status === "PAGADO") {
+                orderClass = "order-pagado-driver";
+                buttonClass = "details-pagado-driver";
+              }
+              if (status === "CANCELADO") {
+                orderClass = "order-cancelado-driver";
+                buttonClass = "details-cancelado-driver";
+              }
+            }
+
+            return (
+              <div key={order.id} className={orderClass}>
+                <OrderCard
+                  order={order}
+                  onConfirm={() => handleOpenAction(order)}
+                  onCancel={() => handleOpenCancel(order)}
+                  confirmBtnClass={buttonClass}
+                />
+              </div>
+            );
+          })}
 
           {data && data.totalPages > 1 && (
             <div className="flex justify-center items-center gap-2 mt-4">

@@ -44,8 +44,7 @@ export default function CartSheet() {
     (acc, item) => acc + item.price * item.quantity,
     0
   );
-  const igv = parseFloat((subtotal * 0.18).toFixed(2));
-  const total = subtotal + igv;
+  const total = subtotal;
 
   const handleConfirm = () => {
     if (cart.length === 0) {
