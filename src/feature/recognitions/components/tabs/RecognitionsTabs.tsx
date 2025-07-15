@@ -1,89 +1,44 @@
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { RankingCard } from "../cards";
+import RankingCard from "../cards/RankingCard";
 
-const vendedoresData = [
-  {
-    initials: "LG",
-    name: "Luis García",
-    role: "Vendedor",
-    data: { ventas: 48, monto: 15250.75, promedio: 318, clientes: 52 },
-  },
-  {
-    initials: "AM",
-    name: "Ana Martínez",
-    role: "Vendedor",
-    data: { ventas: 42, monto: 13800.5, promedio: 329, clientes: 45 },
-  },
-  {
-    initials: "AM",
-    name: "Ana Martínez",
-    role: "Vendedor",
-    data: { ventas: 42, monto: 13800.5, promedio: 329, clientes: 45 },
-  },
-  {
-    initials: "AM",
-    name: "Ana Martínez",
-    role: "Vendedor",
-    data: { ventas: 42, monto: 13800.5, promedio: 329, clientes: 45 },
-  },
-  {
-    initials: "AM",
-    name: "Ana Martínez",
-    role: "Vendedor",
-    data: { ventas: 42, monto: 13800.5, promedio: 329, clientes: 45 },
-  },
-  // Agrega hasta 5...
-];
+import { useTopVendedores } from "../../hooks/useTopVendedores";
+import { useCajerosDelMes } from "../../hooks/useCajerosDelMes";
+import { useEntregadoresDelMes } from "../../hooks/useEntregadoresDelMes";
+import { useProduccionDelMes } from "../../hooks/useProduccionDelMes";
 
-const cajerosData = [
-  {
-    initials: "RP",
-    name: "Rosa Pérez",
-    role: "Cajero",
-    data: { ventas: 50, monto: 12000, presicion: 98.7 },
-  },
-  {
-    initials: "JC",
-    name: "Juan Carlos",
-    role: "Cajero",
-    data: { ventas: 45, monto: 11000, presicion: 97.3 },
-  },
-  // Hasta 5...
-];
-
-const entregasData = [
-  {
-    initials: "RM",
-    name: "Roberto Martínez",
-    role: "Entregas",
-    data: { entregas: 65, puntualidad: "98.5%", distancia: "1250 km", satisfechos: 62 },
-  },
-  {
-    initials: "CV",
-    name: "Carlos Vega",
-    role: "Entregas",
-    data: { entregas: 58, puntualidad: "96.6%", distancia: "1180 km", satisfechos: 55 },
-  },
-  // Hasta 5...
-];
-
-const produccionData = [
-  {
-    initials: "CG",
-    name: "Carlos Gómez",
-    role: "Producción",
-    data: { ordenes: 32, unidades: 850, eficiencia: "98.2%", calidad: "9.8/10" },
-  },
-  {
-    initials: "EJ",
-    name: "Elena Jiménez",
-    role: "Producción",
-    data: { ordenes: 28, unidades: 720, eficiencia: "96.4%", calidad: "9.6/10" },
-  },
-  // Hasta 5...
-];
+function getInitials(name: string) {
+  return name
+    .split(" ")
+    .map((n) => n[0]?.toUpperCase())
+    .join("")
+    .substring(0, 2);
+}
 
 export default function RecognitionsTabs() {
+  const {
+    data: vendedores,
+    isLoading: loadingV,
+    isError: errorV,
+  } = useTopVendedores();
+
+  const {
+    data: cajeros,
+    isLoading: loadingC,
+    isError: errorC,
+  } = useCajerosDelMes();
+
+  const {
+    data: entregadores,
+    isLoading: loadingE,
+    isError: errorE,
+  } = useEntregadoresDelMes();
+
+  const {
+    data: produccion,
+    isLoading: loadingP,
+    isError: errorP,
+  } = useProduccionDelMes();
+
   return (
     <Tabs defaultValue="vendedores" className="w-full">
       <TabsList className="rounded-md flex w-full">
@@ -102,59 +57,98 @@ export default function RecognitionsTabs() {
       </TabsList>
 
       <TabsContent value="vendedores">
-        {vendedoresData.slice(0, 5).map((item, i) => (
-          <RankingCard
-            key={i}
-            position={i + 1}
-            initials={item.initials}
-            name={item.name}
-            role={item.role}
-            area="vendedores"
-            data={item.data}
-          />
-        ))}
+        {loadingV ? (
+          <div className="p-8 text-center text-gray-500">Cargando...</div>
+        ) : errorV ? (
+          <div className="p-8 text-center text-red-500">Error cargando ranking.</div>
+        ) : (
+          vendedores?.slice(0, 5).map((item, i) => (
+            <RankingCard
+              key={item.id}
+              position={i + 1}
+              initials={getInitials(item.nombre)}
+              name={item.nombre}
+              role="Vendedor"
+              area="vendedores"
+              data={{
+                ventas: item.ventas,
+                monto: item.monto,
+                promedio: item.promedio,
+              }}
+            />
+          ))
+        )}
       </TabsContent>
 
       <TabsContent value="cajeros">
-        {cajerosData.slice(0, 5).map((item, i) => (
-          <RankingCard
-            key={i}
-            position={i + 1}
-            initials={item.initials}
-            name={item.name}
-            role={item.role}
-            area="cajeros"
-            data={item.data}
-          />
-        ))}
+        {loadingC ? (
+          <div className="p-8 text-center text-gray-500">Cargando...</div>
+        ) : errorC ? (
+          <div className="p-8 text-center text-red-500">Error cargando ranking.</div>
+        ) : (
+          cajeros?.slice(0, 5).map((item, i) => (
+            <RankingCard
+              key={item.id}
+              position={i + 1}
+              initials={getInitials(item.nombre)}
+              name={item.nombre}
+              role="Cajero"
+              area="cajeros"
+              data={{
+                pedidos: item.pedidos,
+                total: item.total,
+              }}
+            />
+          ))
+        )}
       </TabsContent>
 
       <TabsContent value="entregas">
-        {entregasData.slice(0, 5).map((item, i) => (
-          <RankingCard
-            key={i}
-            position={i + 1}
-            initials={item.initials}
-            name={item.name}
-            role={item.role}
-            area="entregas"
-            data={item.data}
-          />
-        ))}
+        {loadingE ? (
+          <div className="p-8 text-center text-gray-500">Cargando...</div>
+        ) : errorE ? (
+          <div className="p-8 text-center text-red-500">Error cargando ranking.</div>
+        ) : (
+          entregadores?.slice(0, 5).map((item, i) => (
+            <RankingCard
+              key={item.id}
+              position={i + 1}
+              initials={getInitials(item.nombre)}
+              name={item.nombre}
+              role="Entregas"
+              area="entregas"
+              data={{
+                entregas: item.entregas,
+                puntualidad: item.puntualidad,
+                distancia: item.distancia,
+              }}
+            />
+          ))
+        )}
       </TabsContent>
 
       <TabsContent value="produccion">
-        {produccionData.slice(0, 5).map((item, i) => (
-          <RankingCard
-            key={i}
-            position={i + 1}
-            initials={item.initials}
-            name={item.name}
-            role={item.role}
-            area="produccion"
-            data={item.data}
-          />
-        ))}
+        {loadingP ? (
+          <div className="p-8 text-center text-gray-500">Cargando...</div>
+        ) : errorP ? (
+          <div className="p-8 text-center text-red-500">Error cargando ranking.</div>
+        ) : (
+          produccion?.slice(0, 5).map((item, i) => (
+            <RankingCard
+              key={item.id}
+              position={i + 1}
+              initials={getInitials(item.nombre)}
+              name={item.nombre}
+              role="Producción"
+              area="produccion"
+              data={{
+                ordenes: item.ordenes,
+                unidades: item.unidades,
+                eficiencia: item.eficiencia,
+              }}
+            />
+          ))
+        )}
       </TabsContent>
     </Tabs>
   );

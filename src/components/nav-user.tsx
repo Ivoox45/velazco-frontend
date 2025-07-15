@@ -73,7 +73,7 @@ export function NavUser({
                   {user.avatar ? (
                     <AvatarImage src={user.avatar} alt={user.name} />
                   ) : null}
-                  <AvatarFallback>{user.initials}</AvatarFallback>
+                  <AvatarFallback className="bg-gray-700 text-white dark:text-black dark:bg-white">{user.initials}</AvatarFallback>
                 </Avatar>
 
                 <div className="grid flex-1 text-left text-sm leading-tight">
@@ -95,7 +95,7 @@ export function NavUser({
                     {user.avatar ? (
                       <AvatarImage src={user.avatar} alt={user.name} />
                     ) : null}
-                    <AvatarFallback className="dark:text-white">
+                    <AvatarFallback className="bg-gray-700 text-white dark:text-black dark:bg-white">
                       {user.initials}
                     </AvatarFallback>
                   </Avatar>
@@ -159,22 +159,12 @@ export function NavUser({
               {user.avatar ? (
                 <AvatarImage src={user.avatar} alt={user.name} />
               ) : null}
-              <AvatarFallback>{user.initials}</AvatarFallback>
+              <AvatarFallback className="bg-gray-700 text-white dark:text-black dark:bg-white">{user.initials}</AvatarFallback>
             </Avatar>
             <div className="text-center space-y-1">
               <div className="font-bold text-lg">{user.name}</div>
               <div className="text-sm text-muted-foreground">{user.email}</div>
-              <div className="text-sm">
-                Rol: <span className="font-medium">{user.role}</span>
-              </div>
-              <div className="text-sm">
-                Estado:{" "}
-                {user.active ? (
-                  <span className="text-green-600 font-semibold">Activo</span>
-                ) : (
-                  <span className="text-red-600 font-semibold">Inactivo</span>
-                )}
-              </div>
+              
             </div>
           </div>
           <DialogFooter>

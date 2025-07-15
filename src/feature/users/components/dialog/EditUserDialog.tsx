@@ -134,7 +134,7 @@ export function EditUserDialog({ open, onOpenChange, user }: Props) {
             onValueChange={(value) => setRolId(Number(value))}
             disabled={loadingRoles || !rolesData}
           >
-            <SelectTrigger>
+            <SelectTrigger className="w-full">
               <SelectValue placeholder="Seleccionar rol" />
             </SelectTrigger>
             <SelectContent>
