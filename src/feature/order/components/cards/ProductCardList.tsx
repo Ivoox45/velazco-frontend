@@ -8,6 +8,7 @@ import {
   PaginationItem,
   PaginationNext,
   PaginationPrevious,
+  PaginationLink,
 } from "@/components/ui/pagination";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -30,6 +31,10 @@ export default function ProductCardList({ query, category }: Props) {
   });
 
   const totalPages = Math.ceil(filteredProducts.length / PRODUCTS_PER_PAGE);
+
+  // Asegura que la página no quede fuera de rango si cambia el filtro
+  if (page > totalPages && totalPages > 0) setPage(1);
+
   const paginatedProducts = filteredProducts.slice(
     (page - 1) * PRODUCTS_PER_PAGE,
     page * PRODUCTS_PER_PAGE
@@ -70,11 +75,16 @@ export default function ProductCardList({ query, category }: Props) {
                   className={page === 1 ? "pointer-events-none opacity-50" : ""}
                 />
               </PaginationItem>
-              <PaginationItem>
-                <span className="text-sm px-3 py-1 border rounded-md">
-                  Página {page} de {totalPages}
-                </span>
-              </PaginationItem>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                <PaginationItem key={p}>
+                  <PaginationLink
+                    isActive={page === p}
+                    onClick={() => setPage(p)}
+                  >
+                    {p}
+                  </PaginationLink>
+                </PaginationItem>
+              ))}
               <PaginationItem>
                 <PaginationNext
                   onClick={() => setPage((p) => Math.min(p + 1, totalPages))}

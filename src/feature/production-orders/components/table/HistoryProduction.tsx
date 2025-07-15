@@ -9,10 +9,19 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 import { DetailHistoryDialog } from "../dialog";
 import { useState } from "react";
 import type { ProductionHistoryResponseDto } from "../../types";
+
+// --- Importa paginación de shadcn
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationPrevious,
+  PaginationNext,
+  PaginationLink,
+} from "@/components/ui/pagination";
 
 const PAGE_SIZE = 5;
 
@@ -30,6 +39,9 @@ export default function HistoryProduction() {
   const startIdx = (page - 1) * PAGE_SIZE;
   const endIdx = startIdx + PAGE_SIZE;
   const currentData = (data || []).slice(startIdx, endIdx);
+
+  // Si cambian los datos y la página actual queda fuera de rango, vuelve a la primera página
+  if (page > totalPages && totalPages > 0) setPage(1);
 
   const handleOpenDetail = (order: ProductionHistoryResponseDto) => {
     setSelectedOrder(order);
@@ -91,40 +103,46 @@ export default function HistoryProduction() {
           ))}
         </TableBody>
       </Table>
-      {/* Paginación */}
-      <div className="flex flex-col md:flex-row items-center justify-between gap-2 mt-3 px-2">
-        <span className="text-sm text-gray-600 dark:text-white">
-          Página {page} de {totalPages}
-        </span>
-        <div className="flex gap-2">
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => setPage((p) => Math.max(p - 1, 1))}
-            disabled={page === 1}
-            className="flex items-center gap-1"
-          >
-            <ChevronLeft className="w-4 h-4" />
-            Anterior
-          </Button>
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => setPage((p) => Math.min(p + 1, totalPages))}
-            disabled={page === totalPages}
-            className="flex items-center gap-1"
-          >
-            Siguiente
-            <ChevronRight className="w-4 h-4" />
-          </Button>
+
+      {/* Paginación shadcn */}
+      {totalPages > 1 && (
+        <div className="mt-4 flex justify-center">
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
+                  onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+                  aria-disabled={page === 1}
+                  className={page === 1 ? "opacity-50 pointer-events-none" : ""}
+                />
+              </PaginationItem>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                <PaginationItem key={p}>
+                  <PaginationLink
+                    isActive={page === p}
+                    onClick={() => setPage(p)}
+                  >
+                    {p}
+                  </PaginationLink>
+                </PaginationItem>
+              ))}
+              <PaginationItem>
+                <PaginationNext
+                  onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
+                  aria-disabled={page === totalPages}
+                  className={page === totalPages ? "opacity-50 pointer-events-none" : ""}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
         </div>
-      </div>
+      )}
+
       <DetailHistoryDialog
         order={selectedOrder}
         open={open}
         onClose={setOpen}
-      />{" "}
-      {/* 👈 Corrección aquí */}
+      />
     </div>
   );
 }

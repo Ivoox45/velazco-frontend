@@ -24,6 +24,9 @@ export default function useConfirmSale() {
             queryClient.invalidateQueries({
             predicate: (query) => query.queryKey[0] === "products", 
             });
+             queryClient.invalidateQueries({
+            predicate: (query) => query.queryKey[0] === "productsAvailable", 
+            });
         },
     });
 }

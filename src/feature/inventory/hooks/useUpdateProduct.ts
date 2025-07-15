@@ -14,6 +14,8 @@ export default function useUpdateProduct() {
       queryClient.invalidateQueries({ queryKey: ["productions"] });
       queryClient.invalidateQueries({ queryKey: ["daily-productions"] });
       queryClient.invalidateQueries({ queryKey: ["production-detail"] });
+      queryClient.invalidateQueries({ queryKey: ["low-stock-products"] });
+      queryClient.invalidateQueries({ queryKey: ["all-products"] });
     },
   });
 }

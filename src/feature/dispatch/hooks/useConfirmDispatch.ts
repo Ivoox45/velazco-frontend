@@ -11,6 +11,7 @@ export default function useConfirmDispatch() {
         predicate: (query) => query.queryKey[0] === "dispatch-orders",
       });
       queryClient.invalidateQueries({ queryKey: ["daily-sales"] });
+      queryClient.invalidateQueries({ queryKey: ["weekly-sales"] });
     },
   });
 }

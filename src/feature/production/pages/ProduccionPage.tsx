@@ -24,17 +24,28 @@ import startTourProduccion from "../../../tours/startTourProduccion";
 export default function ProduccionPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [finishDialogOpen, setFinishDialogOpen] = useState(false);
-  const [status, setStatus] = useState<EstadoProduccion>("PENDIENTE");
 
+  // El status del tab ahora lo manejaremos basado en el estado real
   const { data: dailyOrders, isLoading, isError } = useDailyProductions();
   const firstOrder = dailyOrders?.[0];
   const productionStatus = firstOrder?.status as ProductionStatus | undefined;
 
+  // Mapeo para los tabs y el flujo visual
+  const visualStatus: EstadoProduccion =
+    productionStatus === "EN_PROCESO"
+      ? "PRODUCCION"
+      : productionStatus === "COMPLETO"
+      ? "COMPLETO"
+      : productionStatus === "INCOMPLETO"
+      ? "INCOMPLETO"
+      : "PENDIENTE";
+
+  // NO se permite cambiar tab en estado finalizado/incompleto, así que solo es para pendiente/producción
+  const [status, setStatus] = useState<EstadoProduccion>(visualStatus);
+
   useEffect(() => {
-    if (!productionStatus) return;
-    if (productionStatus === "PENDIENTE") setStatus("PENDIENTE");
-    else if (productionStatus === "EN_PROCESO") setStatus("PRODUCCION");
-  }, [productionStatus]);
+    setStatus(visualStatus);
+  }, [visualStatus]);
 
   const { mutate: changeStatus, isPending: isChangingStatus } = useUpdateProductionStatus();
   const { mutate: finishOrder, isPending: isFinishingOrder } = useFinalizeProduction();
@@ -75,7 +86,6 @@ export default function ProduccionPage() {
       {
         onSuccess: () => {
           setDialogOpen(false);
-          setStatus("PRODUCCION");
         },
       }
     );
@@ -107,7 +117,7 @@ export default function ProduccionPage() {
     if (typeof window !== "undefined") {
       window.startTour_produccion = () =>
         startTourProduccion(productionStatus === "EN_PROCESO" ? "EN_PROCESO" : "PENDIENTE");
-    };
+    }
     return () => {
       if (typeof window !== "undefined") {
         delete window.startTour_produccion;
@@ -162,6 +172,14 @@ export default function ProduccionPage() {
     },
   };
 
+  // Título de la card dependiendo del estado
+  const tituloPorEstado = {
+    PENDIENTE: "Orden de Producción Pendiente",
+    EN_PROCESO: "Orden en Producción",
+    COMPLETO: "Orden Completada",
+    INCOMPLETO: "Orden Incompleta",
+  };
+
   return (
     <div className="p-4 space-y-4">
       {/* Dialogs */}
@@ -181,11 +199,11 @@ export default function ProduccionPage() {
         products={productsForFinish}
         instrucciones={
           <>
-            {firstOrder?.comments && (
-              <div>{firstOrder.comments}</div>
-            )}
+            {firstOrder?.comments && <div>{firstOrder.comments}</div>}
             <div className="mt-2 text-blue-700 dark:text-blue-200 font-medium">
-              Aquí debes ingresar la <b>cantidad de productos realmente elaborados</b> (pueden ser menos si hubo inconvenientes o desperdicio).
+              Aquí debes ingresar la{" "}
+              <b>cantidad de productos realmente elaborados</b> (pueden ser
+              menos si hubo inconvenientes o desperdicio).
             </div>
           </>
         }
@@ -242,7 +260,14 @@ export default function ProduccionPage() {
 
       {/* Tabs de producción */}
       <div className="w-full production-tabs-driver">
-        <ProductionTabs status={status} onChange={setStatus} />
+        <ProductionTabs
+          status={visualStatus}
+          onChange={(nextStatus) => {
+            // Solo permite cambiar tab si no está completa o incompleta
+            if (visualStatus === "COMPLETO" || visualStatus === "INCOMPLETO") return;
+            setStatus(nextStatus);
+          }}
+        />
       </div>
 
       {/* Card con tabla e instrucciones */}
@@ -250,11 +275,11 @@ export default function ProduccionPage() {
         <Card>
           <CardHeader>
             <CardTitle className="text-2xl font-bold mb-1">
-              {productionStatus === "PENDIENTE"
-                ? "Orden de Producción Pendiente"
-                : productionStatus === "EN_PROCESO"
-                ? "Orden en Producción"
-                : "Orden Finalizada"}
+              {
+                tituloPorEstado[
+                  productionStatus || "PENDIENTE"
+                ]
+              }
             </CardTitle>
             {/* Instrucciones visibles */}
             {firstOrder && (

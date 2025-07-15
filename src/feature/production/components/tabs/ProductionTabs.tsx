@@ -1,6 +1,6 @@
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-export type EstadoProduccion = "PENDIENTE" | "PRODUCCION";
+export type EstadoProduccion = "PENDIENTE" | "PRODUCCION" | "COMPLETO" | "INCOMPLETO";
 
 export interface OrderTabsProps {
   status?: EstadoProduccion;
@@ -11,6 +11,17 @@ export default function ProductionTabs({
   status = "PENDIENTE",
   onChange,
 }: OrderTabsProps) {
+  if (status === "COMPLETO" || status === "INCOMPLETO") {
+    return (
+      <Tabs value={status} className="w-full">
+        <TabsList className="w-full justify-between">
+          <TabsTrigger value={status} className="flex-1" disabled>
+            {status === "COMPLETO" ? "Orden Completada" : "Orden Incompleta"}
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
+    );
+  }
   return (
     <Tabs
       value={status}

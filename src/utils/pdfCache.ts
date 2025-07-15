@@ -4,7 +4,9 @@ import type { ReactElement } from "react";
 
 const pdfCache: Record<string, Blob> = {};
 
-export async function getOrGeneratePdfBlob(key: string, doc: ReactElement): Promise<Blob> {
+import type { DocumentProps } from "@react-pdf/renderer";
+
+export async function getOrGeneratePdfBlob(key: string, doc: ReactElement<DocumentProps>): Promise<Blob> {
   if (pdfCache[key]) {
     return pdfCache[key];
   }
