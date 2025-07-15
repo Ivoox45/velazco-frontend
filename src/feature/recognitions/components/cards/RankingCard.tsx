@@ -1,8 +1,9 @@
-import { Crown, Medal } from "lucide-react";
+import { Crown, Award } from "lucide-react";
+import { avatarVariants } from "@/components/ui/avatar";
 
 interface RankingCardProps {
   position: number;
-  initials: string;
+  initials?: string;
   name: string;
   role: string;
   area: "vendedores" | "cajeros" | "entregas" | "produccion";
@@ -23,6 +24,31 @@ interface RankingCardProps {
   };
 }
 
+function getInitials(name: string) {
+  return name
+    .split(" ")
+    .map((n) => n[0]?.toUpperCase())
+    .join("")
+    .substring(0, 2);
+}
+
+function getRoleVariant(rol: string) {
+  switch (rol) {
+    case "Administrador":
+      return "admin";
+    case "Vendedor":
+      return "vendedor";
+    case "Cajero":
+      return "cajero";
+    case "Producción":
+      return "produccion";
+    case "Entregas":
+      return "entregas";
+    default:
+      return "default";
+  }
+}
+
 export default function RankingCard({
   position,
   initials,
@@ -31,124 +57,132 @@ export default function RankingCard({
   area,
   data,
 }: RankingCardProps) {
-  const areaColors = {
-    vendedores: { text: "text-yellow-600", circleBg: "bg-yellow-200" },
-    cajeros: { text: "text-blue-600", circleBg: "bg-blue-200" },
-    entregas: { text: "text-purple-600", circleBg: "bg-purple-200" },
-    produccion: { text: "text-orange-600", circleBg: "bg-orange-200" },
-  };
+  const roleVariant = getRoleVariant(role);
+  const circleClass = avatarVariants({ variant: roleVariant });
 
-  // Colores para las medallas del top 3
-  const medalColors = [
-    { bg: "bg-yellow-400", text: "text-yellow-900" }, // Oro
-    { bg: "bg-gray-400", text: "text-gray-900" }, // Plata
-    { bg: "bg-yellow-700", text: "text-yellow-100" }, // Bronce
-  ];
-
-  // Fondos para el card según posición
   const cardBgColors = [
-    "bg-yellow-100", // Oro claro
-    "bg-gray-200", // Plata claro
-    "bg-orange-100", // Bronce claro/naranja suave
-    "bg-white", // Normal
-    "bg-white", // Normal
+    "bg-yellow-50 border-yellow-300", // Oro
+    "bg-gray-100 border-gray-300", // Plata
+    "bg-orange-50 border-orange-300", // Bronce
+    "bg-white border-gray-300", // 4to puesto borde gris suave
+    "bg-white border-gray-300", // 5to puesto borde gris suave
   ];
 
-  const colors = areaColors[area];
+  const circleBgColors = [
+    "bg-yellow-400 text-yellow-900",
+    "bg-gray-400 text-gray-900",
+    "bg-yellow-700 text-yellow-100",
+  ];
+
+  const cardBg =
+    position >= 1 && position <= 5
+      ? cardBgColors[position - 1]
+      : "bg-white border-gray-300"; // Aquí borde gris también para posiciones > 5
 
   const isTopThree = position >= 1 && position <= 3;
-  const medalColor = isTopThree ? medalColors[position - 1] : null;
-  const cardBg =
-    position >= 1 && position <= 5 ? cardBgColors[position - 1] : "bg-white";
 
   return (
     <div
-      className={`flex items-center justify-between p-4 rounded-md border border-transparent mb-2 ${cardBg}`}
+      className={`flex items-center justify-between p-6 rounded-md border mb-3 ${cardBg}`}
+      style={{ minHeight: "72px" }}
     >
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-4">
         <div
-          className={`flex items-center justify-center w-8 h-8 rounded-full font-semibold ${
+          className={`flex items-center justify-center w-9 h-9 rounded-full font-semibold text-lg ${
             isTopThree
-              ? `${medalColor!.bg} ${medalColor!.text}`
-              : `${colors.circleBg} text-gray-900`
+              ? circleBgColors[position - 1]
+              : "bg-gray-200 text-gray-900"
           }`}
         >
           {position}
         </div>
-        <div
-          className={`text-lg ${isTopThree ? colors.text : "text-gray-400"}`}
-        >
-          {position === 1 ? <Crown /> : <Medal />}
+
+        <div className="text-2xl">
+          {position === 1 ? (
+            <Crown className="text-yellow-600" />
+          ) : position === 2 ? (
+            <Award className="text-gray-600" />
+          ) : position === 3 ? (
+            <Award className="text-orange-600" />
+          ) : (
+            <Award className="text-gray-300" />
+          )}
         </div>
+
         <div
-          className={`flex items-center justify-center w-10 h-10 rounded-full ${colors.circleBg} text-gray-900 font-bold`}
+          className={`flex items-center justify-center w-12 h-12 rounded-full ${circleClass} text-gray-900 font-bold text-lg`}
         >
-          {initials}
+          {initials || getInitials(name)}
         </div>
+
         <div>
-          <p className="font-semibold text-gray-900">{name}</p>
+          <p className="font-semibold text-gray-900 text-lg">{name}</p>
           <p className="text-xs text-gray-500">{role}</p>
         </div>
       </div>
 
-      <div className="flex gap-8 font-semibold text-sm">
+      <div className="flex gap-12 font-semibold text-lg">
         {area === "vendedores" && (
           <>
-            <div className="text-green-700 text-right">
-              {data.ventas}
-              <p className="font-normal text-xs text-gray-600">Ventas</p>
+            <div className="text-green-500 text-right">
+              <span className="text-xl font-semibold">{data.ventas}</span>
+              <p className="font-normal text-xs text-gray-500">Ventas</p>
             </div>
-            <div className="text-blue-700 text-right">
-              ${data.monto?.toLocaleString()}
-              <p className="font-normal text-xs text-gray-600">Monto</p>
+            <div className="text-blue-600 text-right">
+              <span className="text-xl font-semibold">
+                ${data.monto?.toLocaleString()}
+              </span>
+              <p className="font-normal text-xs text-gray-500">Monto</p>
             </div>
-            <div className="text-purple-700 text-right">
-              ${data.promedio}
-              <p className="font-normal text-xs text-gray-600">Promedio</p>
+            <div className="text-purple-600 text-right">
+              <span className="text-xl font-semibold">${data.promedio}</span>
+              <p className="font-normal text-xs text-gray-500">Promedio</p>
             </div>
           </>
         )}
         {area === "cajeros" && (
           <>
-            <div className="text-green-700 text-right">
-              {data.ventas}
-              <p className="font-normal text-xs text-gray-600">Ventas</p>
+            <div className="text-green-500 text-right">
+              <span className="text-xl font-semibold">{data.ventas}</span>
+              <p className="font-normal text-xs text-gray-500">Ventas</p>
             </div>
-            <div className="text-blue-700 text-right">
-              ${data.monto?.toLocaleString()}
-              <p className="font-normal text-xs text-gray-600">Monto</p>
+            <div className="text-blue-600 text-right">
+              <span className="text-xl font-semibold">
+                ${data.monto?.toLocaleString()}
+              </span>
+              <p className="font-normal text-xs text-gray-500">Monto</p>
             </div>
           </>
         )}
         {area === "entregas" && (
           <>
-            <div className="text-purple-700 text-right">
-              {data.entregas}
-              <p className="font-normal text-xs text-gray-600">Entregas</p>
+            <div className="text-purple-600 text-right">
+              <span className="text-xl font-semibold">{data.entregas}</span>
+              <p className="font-normal text-xs text-gray-500">Entregas</p>
             </div>
-            <div className="text-green-700 text-right">
-              {data.puntualidad}
-              <p className="font-normal text-xs text-gray-600">Puntualidad</p>
+            <div className="text-green-500 text-right">
+              <span className="text-xl font-semibold">{data.puntualidad}</span>
+              <p className="font-normal text-xs text-gray-500">Puntualidad</p>
             </div>
-            <div className="text-blue-700 text-right">
-              {data.distancia}
-              <p className="font-normal text-xs text-gray-600">Distancia</p>
+            <div className="text-blue-600 text-right">
+              <span className="text-xl font-semibold">{data.distancia}</span>
+              <p className="font-normal text-xs text-gray-500">Distancia</p>
             </div>
           </>
         )}
         {area === "produccion" && (
           <>
             <div className="text-orange-600 text-right">
-              {data.ordenes}
-              <p className="font-normal text-xs text-gray-600">Órdenes</p>
+              <span className="text-xl font-semibold">{data.ordenes}</span>
+              <p className="font-normal text-xs text-gray-500">Órdenes</p>
             </div>
-            <div className="text-green-700 text-right">
-              {data.unidades}
-              <p className="font-normal text-xs text-gray-600">Unidades</p>
+            <div className="text-green-500 text-right">
+              <span className="text-xl font-semibold">{data.unidades}</span>
+              <p className="font-normal text-xs text-gray-500">Unidades</p>
             </div>
-            <div className="text-blue-700 text-right">
-              {data.eficiencia}
-              <p className="font-normal text-xs text-gray-600">Eficiencia</p>
+            <div className="text-blue-600 text-right">
+              <span className="text-xl font-semibold">{data.eficiencia}</span>
+              <p className="font-normal text-xs text-gray-500">Eficiencia</p>
             </div>
           </>
         )}

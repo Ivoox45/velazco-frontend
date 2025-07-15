@@ -14,6 +14,24 @@ const vendedoresData = [
     role: "Vendedor",
     data: { ventas: 42, monto: 13800.5, promedio: 329, clientes: 45 },
   },
+  {
+    initials: "AM",
+    name: "Ana Martínez",
+    role: "Vendedor",
+    data: { ventas: 42, monto: 13800.5, promedio: 329, clientes: 45 },
+  },
+  {
+    initials: "AM",
+    name: "Ana Martínez",
+    role: "Vendedor",
+    data: { ventas: 42, monto: 13800.5, promedio: 329, clientes: 45 },
+  },
+  {
+    initials: "AM",
+    name: "Ana Martínez",
+    role: "Vendedor",
+    data: { ventas: 42, monto: 13800.5, promedio: 329, clientes: 45 },
+  },
   // Agrega hasta 5...
 ];
 
