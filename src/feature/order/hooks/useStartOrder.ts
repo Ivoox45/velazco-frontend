@@ -9,6 +9,7 @@ export default function useStartOrder() {
     mutationFn: startOrder,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["productsAvailable"] });
+      queryClient.invalidateQueries({ queryKey: ["top-vendedores"] });
     },
   });
 }

@@ -27,6 +27,9 @@ export default function useConfirmSale() {
              queryClient.invalidateQueries({
             predicate: (query) => query.queryKey[0] === "productsAvailable", 
             });
+            queryClient.invalidateQueries({
+                predicate: (query) => query.queryKey[0] === "cajeros-del-mes",
+            });
         },
     });
 }

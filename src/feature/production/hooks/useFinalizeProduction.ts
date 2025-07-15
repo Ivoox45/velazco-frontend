@@ -16,6 +16,8 @@ export default function useFinalizeProduction() {
       queryClient.invalidateQueries({ queryKey: ["daily-productions"] });
       queryClient.invalidateQueries({ queryKey: ["products"] });
       queryClient.invalidateQueries({ queryKey: ["production-history"] });
+      queryClient.invalidateQueries({ queryKey: ["produccion-del-mes"] }); 
+      queryClient.invalidateQueries({ queryKey: ["productions"] });
     },
   });
 }

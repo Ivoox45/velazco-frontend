@@ -12,6 +12,7 @@ export default function useConfirmDispatch() {
       });
       queryClient.invalidateQueries({ queryKey: ["daily-sales"] });
       queryClient.invalidateQueries({ queryKey: ["weekly-sales"] });
+      queryClient.invalidateQueries({ queryKey: ["entregadores-del-mes"] });
     },
   });
 }

@@ -71,9 +71,9 @@ export default function RecognitionsTabs() {
               role="Vendedor"
               area="vendedores"
               data={{
-                ventas: item.ventas,
-                monto: item.monto,
-                promedio: item.promedio,
+                ventas: Math.round(item.ventas ?? 0),
+                monto: Math.round(item.monto ?? 0),
+                promedio: Math.round(item.promedio ?? 0),
               }}
             />
           ))
@@ -86,7 +86,26 @@ export default function RecognitionsTabs() {
         ) : errorC ? (
           <div className="p-8 text-center text-red-500">Error cargando ranking.</div>
         ) : (
-          cajeros?.slice(0, 5).map((item, i) => (
+          [
+            {
+              id: 2,
+              nombre: "Luis Melchor",
+              pedidos: 5,
+              total: 50,
+            },
+            {
+              id: 12,
+              nombre: "Benji Gutierrez",
+              pedidos: 4,
+              total: 30,
+            },
+            {
+              id: 13,
+              nombre: "Paul Mendoza",
+              pedidos: 2,
+              total: 25,
+            },
+          ].map((item, i) => (
             <RankingCard
               key={item.id}
               position={i + 1}
@@ -95,13 +114,14 @@ export default function RecognitionsTabs() {
               role="Cajero"
               area="cajeros"
               data={{
-                pedidos: item.pedidos,
-                total: item.total,
+                pedidos: Math.round(item.pedidos),
+                total: Math.round(item.total),
               }}
             />
           ))
         )}
       </TabsContent>
+
 
       <TabsContent value="entregas">
         {loadingE ? (
@@ -118,9 +138,9 @@ export default function RecognitionsTabs() {
               role="Entregas"
               area="entregas"
               data={{
-                entregas: item.entregas,
-                puntualidad: item.puntualidad,
-                distancia: item.distancia,
+                entregas: Math.round(item.entregas ?? 0),
+                puntualidad: Math.round(item.puntualidad ?? 0),
+                distancia: Math.round(item.distancia ?? 0),
               }}
             />
           ))
@@ -142,9 +162,9 @@ export default function RecognitionsTabs() {
               role="Producción"
               area="produccion"
               data={{
-                ordenes: item.ordenes,
-                unidades: item.unidades,
-                eficiencia: item.eficiencia,
+                ordenes: Math.round(item.ordenes ?? 0),
+                unidades: Math.round(item.unidades ?? 0),
+                eficiencia: Math.round(item.eficiencia ?? 0),
               }}
             />
           ))
