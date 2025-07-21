@@ -6,4 +6,3 @@ export { ProduccionPage } from "./production";
 export { OrderProductionPage } from "./production-orders";
 export { UserPage } from "./users";
 export { DashboardPage } from "./dashboard";
-export { ReconocimientosPage } from "./recognitions";

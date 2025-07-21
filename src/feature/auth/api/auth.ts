@@ -1,9 +1,7 @@
-// src/feature/auth/api/auth.ts
 import axios from "@/lib/axios";
 import type { AuthLoginRequestDto, AuthLoginResponseDto } from "../types";
 import type { AuthUser } from "@/store/useAuthStore";
 
-// Iniciar sesión
 export async function login(
   payload: AuthLoginRequestDto
 ): Promise<AuthLoginResponseDto> {
