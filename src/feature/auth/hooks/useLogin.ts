@@ -9,7 +9,7 @@ export function useLogin() {
   return useMutation<AuthLoginResponseDto, Error, AuthLoginRequestDto>({
     mutationFn: login,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["profile"] }); // ¡Esto es clave!
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
     },
   });
 }

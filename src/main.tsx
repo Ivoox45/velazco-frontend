@@ -15,7 +15,6 @@ import {
   OrderProductionPage,
   UserPage,
   DashboardPage,
-  ReconocimientosPage,
 } from "@/feature";
 import { Toaster } from "@/components/ui/sonner";
 import "driver.js/dist/driver.css";
@@ -37,7 +36,6 @@ const router = createBrowserRouter([
       { path: "produccion", element: <ProtectedRoute><ProduccionPage /></ProtectedRoute> },
       { path: "ordenes-produccion", element: <ProtectedRoute><OrderProductionPage /></ProtectedRoute> },
       { path: "usuarios", element: <ProtectedRoute><UserPage /></ProtectedRoute> },
-      { path: "reconocimientos", element: <ProtectedRoute><ReconocimientosPage /></ProtectedRoute> },
     ],
   },
 ]);

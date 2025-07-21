@@ -1,4 +1,3 @@
-// src/feature/auth/components/LoginForm.tsx
 import { Eye, EyeOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -47,10 +46,9 @@ export function LoginForm({
   const loginMutation = useLogin();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const user = useAuthStore((state) => state.user); // OBSERVA EL USER DEL STORE
+  const user = useAuthStore((state) => state.user);
   const [shouldRedirect, setShouldRedirect] = useState(false);
 
-  // Efecto para navegar CUANDO el usuario ya esté cargado y debe redirigir
   useEffect(() => {
     if (shouldRedirect && user?.role) {
       navigate(getHomeRouteByRole(user.role));
@@ -63,7 +61,7 @@ export function LoginForm({
       await loginMutation.mutateAsync({ email, password });
       await queryClient.refetchQueries({ queryKey: ["profile"] });
       toast.success("Inicio de sesión exitoso");
-      setShouldRedirect(true); // Espera a que el usuario esté seteado en Zustand
+      setShouldRedirect(true);
     } catch (error: any) {
       const msg =
         error?.response?.data?.message ||
@@ -98,7 +96,7 @@ export function LoginForm({
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  disabled={loginMutation.isLoading}
+                  disabled={loginMutation.isPending}
                 />
               </div>
               <div className="grid gap-3">
@@ -114,7 +112,7 @@ export function LoginForm({
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="pr-10"
-                    disabled={loginMutation.isLoading}
+                    disabled={loginMutation.isPending}
                   />
                   <button
                     type="button"
@@ -134,9 +132,9 @@ export function LoginForm({
                 <Button
                   type="submit"
                   className="w-full"
-                  disabled={loginMutation.isLoading}
+                  disabled={loginMutation.isPending}
                 >
-                  {loginMutation.isLoading ? "Ingresando..." : "Iniciar sesión"}
+                  {loginMutation.isPending ? "Ingresando..." : "Iniciar sesión"}
                 </Button>
               </div>
             </div>

@@ -13,12 +13,11 @@ const ROLE_MODULES: Record<string, string[]> = {
     "produccion",
     "ordenes_produccion",
     "usuarios",
-    "reconocimientos",
   ],
-  CAJERO: ["caja", "reconocimientos"],
-  VENDEDOR: ["pedidos", "reconocimientos"],
-  PRODUCCION: ["produccion", "reconocimientos"],
-  ENTREGAS: ["entregas", "reconocimientos"],
+  CAJERO: ["caja"],
+  VENDEDOR: ["pedidos"],
+  PRODUCCION: ["produccion"],
+  ENTREGAS: ["entregas"],
 };
 
 const PATH_TO_KEY: Record<string, string> = {
@@ -30,7 +29,6 @@ const PATH_TO_KEY: Record<string, string> = {
   "/produccion": "produccion",
   "/ordenes-produccion": "ordenes_produccion",
   "/usuarios": "usuarios",
-  "/reconocimientos": "reconocimientos",
 };
 
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
